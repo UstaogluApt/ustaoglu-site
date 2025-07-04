@@ -1,1100 +1,1331 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bina Yönetim Sistemi</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        .tab-button.active { background-color: #3b82f6; color: white; }
-        .admin-only { display: none; }
-        .admin-only.show { display: inline-block; }
-        .admin-only.show-flex { display: flex; }
-    </style>
-</head>
-<body class="bg-gray-50 min-h-screen">
-    <!-- Header -->
-    <header class="bg-white shadow-sm border-b">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center py-4">
-                <div class="flex items-center">
-                    <div class="bg-blue-600 text-white p-2 rounded-lg mr-3">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                        </svg>
-                    </div>
-                    <h1 class="text-2xl font-bold text-gray-900">Bina Yönetim Sistemi</h1>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <div class="text-sm text-gray-600">
-                        <span class="font-medium">Kullanıcı:</span> <span id="currentUserName">Sakin</span>
-                    </div>
-                    <div id="userStatus" class="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">
-                        Görüntüleme Modu
-                    </div>
-                    <button onclick="toggleAdminLogin()" class="text-sm text-blue-600 hover:text-blue-800 font-medium flex items-center">
-                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
-                        </svg>
-                        Yönetici Girişi
-                    </button>
-                </div>
+```html
+<!-- Admin Login Modal -->
+<div id="adminLoginModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md mx-4">
+        <div class="text-center mb-6">
+            <div class="bg-blue-600 text-white p-3 rounded-full w-12 h-12 mx-auto mb-4 flex items-center justify-center">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                </svg>
             </div>
+            <h3 class="text-xl font-bold text-gray-900 mb-2">Yönetici Girişi</h3>
+            <p class="text-gray-600 text-sm">Düzenleme yapmak için giriş yapın</p>
         </div>
-    </header>
 
-    <!-- Admin Login Modal -->
-    <div id="adminLoginModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md mx-4">
-            <div class="text-center mb-6">
-                <div class="bg-blue-600 text-white p-3 rounded-full w-12 h-12 mx-auto mb-4 flex items-center justify-center">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-                    </svg>
-                </div>
-                <h3 class="text-xl font-bold text-gray-900 mb-2">Yönetici Girişi</h3>
-                <p class="text-gray-600 text-sm">Düzenleme yapmak için giriş yapın</p>
+        <form onsubmit="handleAdminLogin(event)" class="space-y-4">
+            <div>
+                <label for="adminUsername" class="block text-sm font-medium text-gray-700 mb-2">
+                    Kullanıcı Adı
+                </label>
+                <input 
+                    type="text" 
+                    id="adminUsername" 
+                    required 
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Yönetici kullanıcı adı"
+                >
             </div>
 
-            <form onsubmit="handleAdminLogin(event)" class="space-y-4">
-                <div>
-                    <label for="adminUsername" class="block text-sm font-medium text-gray-700 mb-2">
-                        Kullanıcı Adı
-                    </label>
-                    <input 
-                        type="text" 
-                        id="adminUsername" 
-                        required 
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Yönetici kullanıcı adı"
-                    >
-                </div>
+            <div>
+                <label for="adminPassword" class="block text-sm font-medium text-gray-700 mb-2">
+                    Şifre
+                </label>
+                <input 
+                    type="password" 
+                    id="adminPassword" 
+                    required 
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Şifre"
+                >
+            </div>
 
-                <div>
-                    <label for="adminPassword" class="block text-sm font-medium text-gray-700 mb-2">
-                        Şifre
-                    </label>
-                    <input 
-                        type="password" 
-                        id="adminPassword" 
-                        required 
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Şifre"
-                    >
-                </div>
+            <div class="bg-blue-50 rounded-lg p-3 text-sm">
+                <p class="font-medium text-blue-900 mb-1">Demo Yönetici Hesabı:</p>
+                <p class="text-blue-800">Kullanıcı: <span class="font-mono">admin</span></p>
+                <p class="text-blue-800">Şifre: <span class="font-mono">123456</span></p>
+            </div>
 
-                <div class="bg-blue-50 rounded-lg p-3 text-sm">
-                    <p class="font-medium text-blue-900 mb-1">Demo Yönetici Hesabı:</p>
-                    <p class="text-blue-800">Kullanıcı: <span class="font-mono">admin</span></p>
-                    <p class="text-blue-800">Şifre: <span class="font-mono">123456</span></p>
-                </div>
+            <div class="flex justify-end space-x-3 pt-4">
+                <button type="button" onclick="hideAdminLogin()" class="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50">
+                    İptal
+                </button>
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                    Giriş Yap
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 
-                <div class="flex justify-end space-x-3 pt-4">
-                    <button type="button" onclick="hideAdminLogin()" class="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50">
-                        İptal
-                    </button>
-                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                        Giriş Yap
-                    </button>
-                </div>
-            </form>
+<!-- Navigation Tabs -->
+<nav class="bg-white border-b">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex space-x-8">
+            <button onclick="showTab('dashboard')" class="tab-button active py-4 px-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                📊 Genel Bakış
+            </button>
+            <button onclick="showTab('residents')" class="tab-button py-4 px-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                👥 Sakinler
+            </button>
+            <button onclick="showTab('dues')" class="tab-button py-4 px-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                💰 Aidatlar
+            </button>
+            <button onclick="showTab('expenses')" class="tab-button py-4 px-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                📋 Giderler
+            </button>
+
+            <button onclick="showTab('reports')" class="tab-button py-4 px-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                📈 Raporlar
+            </button>
         </div>
     </div>
+</nav>
 
-    <!-- Navigation Tabs -->
-    <nav class="bg-white border-b">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex space-x-8">
-                <button onclick="showTab('dashboard', this)" class="tab-button active py-4 px-1 border-b-2 border-blue-600 text-sm font-medium text-blue-600">
-                    📊 Genel Bakış
-                </button>
-                <button onclick="showTab('residents', this)" class="tab-button py-4 px-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300">
-                    👥 Sakinler
-                </button>
-                <button onclick="showTab('dues', this)" class="tab-button py-4 px-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300">
-                    💰 Aidatlar
-                </button>
-                <button onclick="showTab('expenses', this)" class="tab-button py-4 px-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300">
-                    📋 Giderler
-                </button>
-                <button onclick="showTab('reports', this)" class="tab-button py-4 px-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300">
-                    📈 Raporlar
-                </button>
-            </div>
-        </div>
-    </nav>
-
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <!-- Dashboard Tab -->
-        <div id="dashboard" class="tab-content active">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <!-- Stats Cards -->
-                <div class="bg-white rounded-lg shadow p-6">
-                    <div class="flex items-center">
-                        <div class="p-2 bg-blue-100 rounded-lg">
-                            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                            </svg>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-600">Toplam Daire</p>
-                            <p id="totalApartments" class="text-2xl font-semibold text-gray-900">5</p>
-                        </div>
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Dashboard Tab -->
+    <div id="dashboard" class="tab-content active">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- Stats Cards -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="p-2 bg-blue-100 rounded-lg">
+                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Toplam Daire</p>
+                        <p id="totalApartments" class="text-2xl font-semibold text-gray-900">5</p>
                     </div>
                 </div>
+            </div>
 
-                <div class="bg-white rounded-lg shadow p-6">
-                    <div class="flex items-center">
-                        <div class="p-2 bg-green-100 rounded-lg">
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="p-2 bg-green-100 rounded-lg">
+                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Bu Ay Toplanan</p>
+                        <p id="monthlyCollected" class="text-2xl font-semibold text-gray-900">₺0</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="p-2 bg-yellow-100 rounded-lg">
+                        <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Bekleyen Aidat</p>
+                        <p id="pendingDues" class="text-2xl font-semibold text-gray-900">₺0</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="p-2 bg-red-100 rounded-lg">
+                        <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Bu Ay Gider</p>
+                        <p id="monthlyExpenses" class="text-2xl font-semibold text-gray-900">₺0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- All-Time Financial Summary -->
+        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 mb-8">
+            <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                <svg class="w-6 h-6 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+                Tüm Zamanlar Finansal Özet
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white rounded-lg p-4 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600">Toplam Gelir</p>
+                            <p class="text-2xl font-bold text-green-600">₺127,450</p>
+                        </div>
+                        <div class="bg-green-100 p-2 rounded-lg">
                             <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11l5-5m0 0l5 5m-5-5v12"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">Son 12 ay</p>
+                </div>
+                
+                <div class="bg-white rounded-lg p-4 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600">Toplam Gider</p>
+                            <p class="text-2xl font-bold text-red-600">₺89,320</p>
+                        </div>
+                        <div class="bg-red-100 p-2 rounded-lg">
+                            <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 13l-5 5m0 0l-5-5m5 5V6"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">Son 12 ay</p>
+                </div>
+                
+                <div class="bg-white rounded-lg p-4 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600">Net Bakiye</p>
+                            <p class="text-2xl font-bold text-blue-600">₺38,130</p>
+                        </div>
+                        <div class="bg-blue-100 p-2 rounded-lg">
+                            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
                             </svg>
                         </div>
-                        <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-600">Bu Ay Toplanan</p>
-                            <p id="monthlyCollected" class="text-2xl font-semibold text-gray-900">₺3,620</p>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">Kümülatif</p>
+                </div>
+                
+                <div class="bg-white rounded-lg p-4 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600">Ortalama Aylık</p>
+                            <p class="text-2xl font-bold text-purple-600">₺3,178</p>
+                        </div>
+                        <div class="bg-purple-100 p-2 rounded-lg">
+                            <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">Net gelir</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activities -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="bg-white rounded-lg shadow">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900">Son Ödemeler</h3>
+                </div>
+                <div class="p-6">
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-900">Daire 12 - Mehmet Kaya</p>
+                                <p class="text-sm text-gray-500">Ocak 2024 Aidatı</p>
+                            </div>
+                            <span class="text-green-600 font-medium">₺850</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-900">Daire 8 - Ayşe Demir</p>
+                                <p class="text-sm text-gray-500">Ocak 2024 Aidatı</p>
+                            </div>
+                            <span class="text-green-600 font-medium">₺850</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-900">Daire 15 - Ali Özkan</p>
+                                <p class="text-sm text-gray-500">Ocak 2024 Aidatı</p>
+                            </div>
+                            <span class="text-green-600 font-medium">₺850</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900">Bekleyen Ödemeler</h3>
+                </div>
+                <div class="p-6">
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-900">Daire 3 - Fatma Yıldız</p>
+                                <p class="text-sm text-red-500">Gecikme: 15 gün</p>
+                            </div>
+                            <span class="text-red-600 font-medium">₺850</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-900">Daire 7 - Hasan Çelik</p>
+                                <p class="text-sm text-red-500">Gecikme: 8 gün</p>
+                            </div>
+                            <span class="text-red-600 font-medium">₺850</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-900">Daire 19 - Zeynep Acar</p>
+                                <p class="text-sm text-red-500">Gecikme: 3 gün</p>
+                            </div>
+                            <span class="text-red-600 font-medium">₺850</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Residents Tab -->
+    <div id="residents" class="tab-content">
+        <div class="bg-white rounded-lg shadow">
+            <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                <h3 class="text-lg font-medium text-gray-900">Bina Sakinleri</h3>
+                <button onclick="showAddResidentModal()" class="admin-only bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                    + Yeni Sakin Ekle
+                </button>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Daire No</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ad Soyad</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Telefon</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">E-posta</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aylık Aidat</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
+                            <th class="admin-only px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody id="residentsTable" class="bg-white divide-y divide-gray-200">
+                        <!-- Residents will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dues Tab -->
+    <div id="dues" class="tab-content">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-lg shadow">
+                    <div class="px-4 py-3 border-b border-gray-200 flex justify-between items-center">
+                        <h3 class="text-lg font-medium text-gray-900">Aidat Takibi</h3>
+                        <div class="flex space-x-2">
+                            <select id="monthSelector" onchange="filterDuesByMonth()" class="border border-gray-300 rounded-md px-2 py-1 text-sm">
+                                <!-- Options will be populated by JavaScript -->
+                            </select>
+                            <button onclick="showAddPaymentModal()" class="admin-only bg-green-600 text-white px-3 py-1 rounded-lg hover:bg-green-700 transition-colors text-sm">
+                                + Ödeme Ekle
+                            </button>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200 text-sm">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Daire</th>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sakin</th>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aidat</th>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ödenen</th>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kalan</th>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ödemeler</th>
+                                    <th class="admin-only px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">İşlem</th>
+                                </tr>
+                            </thead>
+                            <tbody id="duesTable" class="bg-white">
+                                <!-- Dues will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-lg shadow">
+                    <div class="px-4 py-3 border-b border-gray-200">
+                        <h3 class="text-base font-medium text-gray-900">Ödeme Geçmişi</h3>
+                    </div>
+                    <div class="max-h-80 overflow-y-auto">
+                        <div id="paymentHistory" class="p-3 space-y-2">
+                            <!-- Payment history will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
+            <div class="bg-white rounded-lg shadow p-6">
+                <h4 class="text-lg font-medium text-gray-900 mb-4">Aidat Bilgileri</h4>
+                <div class="space-y-3 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">En Düşük Aidat:</span>
+                        <span class="font-medium text-green-600">₺780</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">En Yüksek Aidat:</span>
+                        <span class="font-medium text-blue-600">₺1,050</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Ortalama Aidat:</span>
+                        <span class="font-medium text-gray-900">₺890</span>
+                    </div>
+                    <hr>
+                    <div class="text-xs text-gray-500">
+                        💡 Her sakin için farklı aidat tutarı belirlenebilir
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6">
+                <h4 class="text-lg font-medium text-gray-900 mb-4">Ödeme Özeti</h4>
+                <div class="space-y-3">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Toplam Aidat:</span>
+                        <span class="font-medium" id="totalDues">₺4,450</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Ödenen:</span>
+                        <span class="text-green-600 font-medium" id="totalPaid">₺3,620</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Kalan:</span>
+                        <span class="text-red-600 font-medium" id="totalRemaining">₺830</span>
+                    </div>
+                    <hr>
+                    <div class="flex justify-between text-lg font-semibold">
+                        <span>Toplama Oranı:</span>
+                        <span class="text-blue-600" id="collectionRate">81%</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6">
+                <h4 class="text-lg font-medium text-gray-900 mb-4">Bu Ay Ödemeler</h4>
+                <div class="space-y-3">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Toplam Ödeme:</span>
+                        <span class="font-medium text-green-600" id="monthlyPaymentsTotal">₺0</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Aidat Ödemeleri:</span>
+                        <span class="font-medium" id="duesPaymentsTotal">₺0</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Ek Ödemeler:</span>
+                        <span class="font-medium" id="extraPaymentsTotal">₺0</span>
+                    </div>
+                    <hr>
+                    <div class="flex justify-between text-lg font-semibold">
+                        <span>Ödeme Sayısı:</span>
+                        <span class="text-blue-600" id="paymentCount">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Expenses Tab -->
+    <div id="expenses" class="tab-content">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-lg shadow">
+                    <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                        <h3 class="text-lg font-medium text-gray-900">Gider Listesi</h3>
+                        <button onclick="showAddExpenseModal()" class="admin-only bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                            + Yeni Gider Ekle
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tarih</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Açıklama</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kategori</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tutar</th>
+                                    <th class="admin-only px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody id="expensesTable" class="bg-white divide-y divide-gray-200">
+                                <!-- Expenses will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <div class="bg-white rounded-lg shadow p-6 mb-6">
+                    <h4 class="text-lg font-medium text-gray-900 mb-4">Bu Ay Gider Özeti</h4>
+                    <div class="space-y-3">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Temizlik:</span>
+                            <span class="font-medium">₺3,500</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Elektrik:</span>
+                            <span class="font-medium">₺2,800</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Su:</span>
+                            <span class="font-medium">₺1,200</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Bakım-Onarım:</span>
+                            <span class="font-medium">₺4,800</span>
+                        </div>
+                        <hr>
+                        <div class="flex justify-between text-lg font-semibold">
+                            <span>Toplam:</span>
+                            <span class="text-red-600">₺12,300</span>
                         </div>
                     </div>
                 </div>
 
                 <div class="bg-white rounded-lg shadow p-6">
-                    <div class="flex items-center">
-                        <div class="p-2 bg-yellow-100 rounded-lg">
-                            <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
-                            </svg>
+                    <h4 class="text-lg font-medium text-gray-900 mb-4">Gider Kategorileri</h4>
+                    <canvas id="expenseChart" width="300" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- Reports Tab -->
+    <div id="reports" class="tab-content">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- Financial Summary Chart -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Aylık Gelir-Gider Karşılaştırması</h3>
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                        <div class="flex items-center">
+                            <div class="w-4 h-4 bg-green-500 rounded mr-3"></div>
+                            <span class="text-sm font-medium text-gray-700">Toplam Gelir</span>
                         </div>
-                        <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-600">Bekleyen Aidat</p>
-                            <p id="pendingDues" class="text-2xl font-semibold text-gray-900">₺830</p>
+                        <span id="reportTotalIncome" class="text-lg font-bold text-green-600">₺0</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-red-50 rounded-lg">
+                        <div class="flex items-center">
+                            <div class="w-4 h-4 bg-red-500 rounded mr-3"></div>
+                            <span class="text-sm font-medium text-gray-700">Toplam Gider</span>
+                        </div>
+                        <span id="reportTotalExpenses" class="text-lg font-bold text-red-600">₺0</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-blue-50 rounded-lg border-t-2 border-blue-200">
+                        <div class="flex items-center">
+                            <div class="w-4 h-4 bg-blue-500 rounded mr-3"></div>
+                            <span class="text-sm font-medium text-gray-700">Net Bakiye</span>
+                        </div>
+                        <span id="reportNetBalance" class="text-lg font-bold text-blue-600">₺0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Collection Rate -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Aidat Toplama Durumu</h3>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-600">Toplam Aidat</span>
+                        <span id="reportTotalDues" class="font-medium">₺0</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-600">Ödenen</span>
+                        <span id="reportPaidDues" class="text-green-600 font-medium">₺0</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-600">Bekleyen</span>
+                        <span id="reportPendingDues" class="text-red-600 font-medium">₺0</span>
+                    </div>
+                    <div class="mt-4">
+                        <div class="flex justify-between text-sm text-gray-600 mb-2">
+                            <span>Toplama Oranı</span>
+                            <span id="reportCollectionRate">0%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-3">
+                            <div id="reportCollectionBar" class="bg-blue-600 h-3 rounded-full transition-all duration-300" style="width: 0%"></div>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <div class="bg-white rounded-lg shadow p-6">
-                    <div class="flex items-center">
-                        <div class="p-2 bg-red-100 rounded-lg">
-                            <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-600">Bu Ay Gider</p>
-                            <p id="monthlyExpenses" class="text-2xl font-semibold text-gray-900">₺4,950</p>
-                        </div>
-                    </div>
+            <!-- Expense Categories -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Gider Kategorileri</h3>
+                <div id="expenseCategoriesReport" class="space-y-3">
+                    <!-- Categories will be populated by JavaScript -->
                 </div>
             </div>
 
             <!-- Recent Activities -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div class="bg-white rounded-lg shadow">
-                    <div class="px-6 py-4 border-b border-gray-200">
-                        <h3 class="text-lg font-medium text-gray-900">Son Ödemeler</h3>
-                    </div>
-                    <div class="p-6">
-                        <div class="space-y-4">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="text-sm font-medium text-gray-900">Daire 1 - Ahmet Yılmaz</p>
-                                    <p class="text-sm text-gray-500">Haziran 2025 Aidatı</p>
-                                </div>
-                                <span class="text-green-600 font-medium">₺850</span>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="text-sm font-medium text-gray-900">Daire 2 - Ayşe Demir</p>
-                                    <p class="text-sm text-gray-500">Haziran 2025 Aidatı</p>
-                                </div>
-                                <span class="text-green-600 font-medium">₺920</span>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="text-sm font-medium text-gray-900">Daire 5 - Ali Özkan</p>
-                                    <p class="text-sm text-gray-500">Temmuz 2025 Aidatı</p>
-                                </div>
-                                <span class="text-green-600 font-medium">₺1,050</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-lg shadow">
-                    <div class="px-6 py-4 border-b border-gray-200">
-                        <h3 class="text-lg font-medium text-gray-900">Bekleyen Ödemeler</h3>
-                    </div>
-                    <div class="p-6">
-                        <div class="space-y-4">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="text-sm font-medium text-gray-900">Daire 4 - Fatma Yıldız</p>
-                                    <p class="text-sm text-red-500">Haziran 2025 - Bekliyor</p>
-                                </div>
-                                <span class="text-red-600 font-medium">₺850</span>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="text-sm font-medium text-gray-900">Daire 3 - Mehmet Kaya</p>
-                                    <p class="text-sm text-orange-500">Temmuz 2025 - Bekliyor</p>
-                                </div>
-                                <span class="text-orange-600 font-medium">₺780</span>
-                            </div>
-                        </div>
-                    </div>
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Son Aktiviteler</h3>
+                <div id="recentActivitiesReport" class="space-y-3">
+                    <!-- Activities will be populated by JavaScript -->
                 </div>
             </div>
         </div>
 
-        <!-- Residents Tab -->
-        <div id="residents" class="tab-content">
-            <div class="bg-white rounded-lg shadow">
-                <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-                    <h3 class="text-lg font-medium text-gray-900">Bina Sakinleri</h3>
-                    <button onclick="showAddResidentModal()" class="admin-only bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-                        + Yeni Sakin Ekle
-                    </button>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Daire No</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ad Soyad</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Telefon</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">E-posta</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aylık Aidat</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
-                                <th class="admin-only px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">İşlemler</th>
-                            </tr>
-                        </thead>
-                        <tbody id="residentsTable" class="bg-white divide-y divide-gray-200">
-                            <!-- Residents will be populated by JavaScript -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- Dues Tab -->
-        <div id="dues" class="tab-content">
-            <!-- 12 Month Dues Tracking Table -->
-            <div class="bg-white rounded-lg shadow mb-8">
-                <div class="px-4 py-3 border-b border-gray-200 flex justify-between items-center">
-                    <h3 class="text-lg font-medium text-gray-900">12 Aylık Aidat Takibi (Haziran 2025 - Mayıs 2026)</h3>
-                    <div class="admin-only flex space-x-2">
-                        <button onclick="markSelectedMonthsPaid()" class="bg-green-600 text-white px-3 py-1 rounded-lg hover:bg-green-700 transition-colors text-sm">
-                            ✓ Ödendi İşaretle
-                        </button>
-                        <button onclick="markSelectedMonthsUnpaid()" class="bg-red-600 text-white px-3 py-1 rounded-lg hover:bg-red-700 transition-colors text-sm">
-                            ✗ Ödenmedi İşaretle
+        <!-- Download Reports Section -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-6">Rapor İndirme</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="p-4 border border-gray-200 rounded-lg hover:border-blue-300 transition-colors">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h4 class="font-medium text-gray-900">Aidat Raporu</h4>
+                            <p class="text-sm text-gray-600 mt-1">Güncel aidat durumu</p>
+                            <p class="text-xs text-blue-600 mt-2" id="duesReportInfo">5 daire • Güncel</p>
+                        </div>
+                        <button onclick="downloadReport('dues')" class="bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm">
+                            📄 İndir
                         </button>
                     </div>
                 </div>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full text-xs">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="admin-only px-2 py-2 text-center text-xs font-medium text-gray-500">
-                                    <input type="checkbox" id="selectAllMonths" onchange="toggleSelectAllMonths()" class="rounded">
-                                </th>
-                                <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 sticky left-0 bg-gray-50 z-10 border-r">Daire</th>
-                                <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 sticky left-12 bg-gray-50 z-10 border-r">Sakin</th>
-                                <th class="px-2 py-2 text-center text-xs font-medium text-gray-500">Haz 25</th>
-                                <th class="px-2 py-2 text-center text-xs font-medium text-gray-500">Tem 25</th>
-                                <th class="px-2 py-2 text-center text-xs font-medium text-gray-500">Ağu 25</th>
-                                <th class="px-2 py-2 text-center text-xs font-medium text-gray-500">Eyl 25</th>
-                                <th class="px-2 py-2 text-center text-xs font-medium text-gray-500">Eki 25</th>
-                                <th class="px-2 py-2 text-center text-xs font-medium text-gray-500">Kas 25</th>
-                                <th class="px-2 py-2 text-center text-xs font-medium text-gray-500">Ara 25</th>
-                                <th class="px-2 py-2 text-center text-xs font-medium text-gray-500">Oca 26</th>
-                                <th class="px-2 py-2 text-center text-xs font-medium text-gray-500">Şub 26</th>
-                                <th class="px-2 py-2 text-center text-xs font-medium text-gray-500">Mar 26</th>
-                                <th class="px-2 py-2 text-center text-xs font-medium text-gray-500">Nis 26</th>
-                                <th class="px-2 py-2 text-center text-xs font-medium text-gray-500">May 26</th>
-                                <th class="px-2 py-2 text-center text-xs font-medium text-gray-500">Toplam</th>
-                            </tr>
-                        </thead>
-                        <tbody id="monthlyDuesTable" class="bg-white divide-y divide-gray-200">
-                            <!-- Monthly dues will be populated by JavaScript -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
 
-            <!-- Original Payment Table -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="lg:col-span-2">
-                    <div class="bg-white rounded-lg shadow">
-                        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-                            <h3 class="text-lg font-medium text-gray-900">Aidat Durumu</h3>
-                            <div class="flex space-x-2">
-                                <button onclick="showAddPaymentModal()" class="admin-only bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
-                                    + Ödeme Ekle
-                                </button>
-                            </div>
+                <div class="p-4 border border-gray-200 rounded-lg hover:border-blue-300 transition-colors">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h4 class="font-medium text-gray-900">Gider Raporu</h4>
+                            <p class="text-sm text-gray-600 mt-1">Detaylı gider listesi</p>
+                            <p class="text-xs text-blue-600 mt-2" id="expensesReportInfo">4 gider • Bu ay</p>
                         </div>
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50">
-                                    <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Daire No</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sakin</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aylık Aidat</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Son Ödeme</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="duesTable" class="bg-white divide-y divide-gray-200">
-                                    <!-- Dues will be populated by JavaScript -->
-                                </tbody>
-                            </table>
-                        </div>
+                        <button onclick="downloadReport('expenses')" class="bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm">
+                            📊 İndir
+                        </button>
                     </div>
                 </div>
 
-                <div class="lg:col-span-1">
-                    <div class="bg-white rounded-lg shadow">
-                        <div class="px-4 py-3 border-b border-gray-200">
-                            <h3 class="text-base font-medium text-gray-900">Ödeme Geçmişi</h3>
+                <div class="p-4 border border-gray-200 rounded-lg hover:border-blue-300 transition-colors">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h4 class="font-medium text-gray-900">Sakin Listesi</h4>
+                            <p class="text-sm text-gray-600 mt-1">Tüm sakin bilgileri</p>
+                            <p class="text-xs text-blue-600 mt-2" id="residentsReportInfo">5 sakin • Aktif</p>
                         </div>
-                        <div class="max-h-80 overflow-y-auto">
-                            <div id="paymentHistory" class="p-3 space-y-2">
-                                <!-- Payment history will be populated by JavaScript -->
-                            </div>
-                        </div>
+                        <button onclick="downloadReport('residents')" class="bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm">
+                            👥 İndir
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
+</main>
 
-        <!-- Expenses Tab -->
-        <div id="expenses" class="tab-content">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div class="lg:col-span-2">
-                    <div class="bg-white rounded-lg shadow">
-                        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-                            <h3 class="text-lg font-medium text-gray-900">Gider Listesi</h3>
-                            <button onclick="showAddExpenseModal()" class="admin-only bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-                                + Yeni Gider Ekle
-                            </button>
-                        </div>
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50">
-                                    <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tarih</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Açıklama</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kategori</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tutar</th>
-                                        <th class="admin-only px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">İşlemler</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="expensesTable" class="bg-white divide-y divide-gray-200">
-                                    <!-- Expenses will be populated by JavaScript -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
+<!-- Modals (Admin Only) -->
+<div id="addResidentModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Yeni Sakin Ekle</h3>
+        <form onsubmit="addResident(event)">
+            <div class="space-y-4">
                 <div>
-                    <div class="bg-white rounded-lg shadow p-6">
-                        <h4 class="text-lg font-medium text-gray-900 mb-4">Bu Ay Gider Özeti</h4>
-                        <div class="space-y-3">
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">Temizlik:</span>
-                                <span class="font-medium">₺450</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">Elektrik:</span>
-                                <span class="font-medium">₺2,800</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">Su:</span>
-                                <span class="font-medium">₺1,200</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">Bakım-Onarım:</span>
-                                <span class="font-medium">₺1,500</span>
-                            </div>
-                            <hr>
-                            <div class="flex justify-between text-lg font-semibold">
-                                <span>Toplam:</span>
-                                <span class="text-red-600">₺5,950</span>
-                            </div>
-                        </div>
-                    </div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Daire No</label>
+                    <input type="number" id="apartmentNo" required class="w-full border border-gray-300 rounded-md px-3 py-2">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Ad Soyad</label>
+                    <input type="text" id="residentName" required class="w-full border border-gray-300 rounded-md px-3 py-2">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Telefon</label>
+                    <input type="tel" id="residentPhone" required class="w-full border border-gray-300 rounded-md px-3 py-2">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">E-posta</label>
+                    <input type="email" id="residentEmail" required class="w-full border border-gray-300 rounded-md px-3 py-2">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Aylık Aidat Tutarı (₺)</label>
+                    <input type="number" id="residentDues" required min="0" step="0.01" class="w-full border border-gray-300 rounded-md px-3 py-2" placeholder="850">
                 </div>
             </div>
-        </div>
+            <div class="flex justify-end space-x-3 mt-6">
+                <button type="button" onclick="hideAddResidentModal()" class="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50">
+                    İptal
+                </button>
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                    Ekle
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 
-        <!-- Reports Tab -->
-        <div id="reports" class="tab-content">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                <!-- Financial Summary Chart -->
-                <div class="bg-white rounded-lg shadow p-6">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Aylık Gelir-Gider Karşılaştırması</h3>
-                    <div class="space-y-4">
-                        <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                            <div class="flex items-center">
-                                <div class="w-4 h-4 bg-green-500 rounded mr-3"></div>
-                                <span class="text-sm font-medium text-gray-700">Toplam Gelir</span>
-                            </div>
-                            <span class="text-lg font-bold text-green-600">₺4,170</span>
-                        </div>
-                        <div class="flex items-center justify-between p-3 bg-red-50 rounded-lg">
-                            <div class="flex items-center">
-                                <div class="w-4 h-4 bg-red-500 rounded mr-3"></div>
-                                <span class="text-sm font-medium text-gray-700">Toplam Gider</span>
-                            </div>
-                            <span class="text-lg font-bold text-red-600">₺5,950</span>
-                        </div>
-                        <div class="flex items-center justify-between p-3 bg-blue-50 rounded-lg border-t-2 border-blue-200">
-                            <div class="flex items-center">
-                                <div class="w-4 h-4 bg-blue-500 rounded mr-3"></div>
-                                <span class="text-sm font-medium text-gray-700">Net Bakiye</span>
-                            </div>
-                            <span class="text-lg font-bold text-red-600">-₺1,780</span>
-                        </div>
-                    </div>
+<div id="addExpenseModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Yeni Gider Ekle</h3>
+        <form onsubmit="addExpense(event)">
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Tarih</label>
+                    <input type="date" id="expenseDate" required class="w-full border border-gray-300 rounded-md px-3 py-2">
                 </div>
-
-                <!-- Collection Rate -->
-                <div class="bg-white rounded-lg shadow p-6">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Aidat Toplama Durumu</h3>
-                    <div class="space-y-4">
-                        <div class="flex justify-between items-center">
-                            <span class="text-sm text-gray-600">Toplam Aidat</span>
-                            <span class="font-medium">₺4,450</span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-sm text-gray-600">Ödenen</span>
-                            <span class="text-green-600 font-medium">₺3,620</span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-sm text-gray-600">Bekleyen</span>
-                            <span class="text-red-600 font-medium">₺830</span>
-                        </div>
-                        <div class="mt-4">
-                            <div class="flex justify-between text-sm text-gray-600 mb-2">
-                                <span>Toplama Oranı</span>
-                                <span>81%</span>
-                            </div>
-                            <div class="w-full bg-gray-200 rounded-full h-3">
-                                <div class="bg-blue-600 h-3 rounded-full transition-all duration-300" style="width: 81%"></div>
-                            </div>
-                        </div>
-                    </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Açıklama</label>
+                    <input type="text" id="expenseDescription" required class="w-full border border-gray-300 rounded-md px-3 py-2">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Kategori</label>
+                    <select id="expenseCategory" required class="w-full border border-gray-300 rounded-md px-3 py-2">
+                        <option value="">Seçiniz</option>
+                        <option value="Temizlik">Temizlik</option>
+                        <option value="Elektrik">Elektrik</option>
+                        <option value="Su">Su</option>
+                        <option value="Bakım-Onarım">Bakım-Onarım</option>
+                        <option value="Güvenlik">Güvenlik</option>
+                        <option value="Diğer">Diğer</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Tutar (₺)</label>
+                    <input type="number" id="expenseAmount" required class="w-full border border-gray-300 rounded-md px-3 py-2">
                 </div>
             </div>
-        </div>
-    </main>
-
-    <!-- Modals -->
-    <div id="addResidentModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">Yeni Sakin Ekle</h3>
-            <form onsubmit="addResident(event)">
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Daire No</label>
-                        <input type="number" id="apartmentNo" required class="w-full border border-gray-300 rounded-md px-3 py-2">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Ad Soyad</label>
-                        <input type="text" id="residentName" required class="w-full border border-gray-300 rounded-md px-3 py-2">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Telefon</label>
-                        <input type="tel" id="residentPhone" required class="w-full border border-gray-300 rounded-md px-3 py-2">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">E-posta</label>
-                        <input type="email" id="residentEmail" required class="w-full border border-gray-300 rounded-md px-3 py-2">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Aylık Aidat Tutarı (₺)</label>
-                        <input type="number" id="residentDues" required min="0" step="0.01" class="w-full border border-gray-300 rounded-md px-3 py-2" placeholder="850">
-                    </div>
-                </div>
-                <div class="flex justify-end space-x-3 mt-6">
-                    <button type="button" onclick="hideAddResidentModal()" class="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50">
-                        İptal
-                    </button>
-                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                        Ekle
-                    </button>
-                </div>
-            </form>
-        </div>
+            <div class="flex justify-end space-x-3 mt-6">
+                <button type="button" onclick="hideAddExpenseModal()" class="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50">
+                    İptal
+                </button>
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                    Ekle
+                </button>
+            </div>
+        </form>
     </div>
+</div>
 
-    <div id="addExpenseModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">Yeni Gider Ekle</h3>
-            <form onsubmit="addExpense(event)">
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Tarih</label>
-                        <input type="date" id="expenseDate" required class="w-full border border-gray-300 rounded-md px-3 py-2">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Açıklama</label>
-                        <input type="text" id="expenseDescription" required class="w-full border border-gray-300 rounded-md px-3 py-2">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Kategori</label>
-                        <select id="expenseCategory" required class="w-full border border-gray-300 rounded-md px-3 py-2">
-                            <option value="">Seçiniz</option>
-                            <option value="Temizlik">Temizlik</option>
-                            <option value="Elektrik">Elektrik</option>
-                            <option value="Su">Su</option>
-                            <option value="Bakım-Onarım">Bakım-Onarım</option>
-                            <option value="Güvenlik">Güvenlik</option>
-                            <option value="Diğer">Diğer</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Tutar (₺)</label>
-                        <input type="number" id="expenseAmount" required class="w-full border border-gray-300 rounded-md px-3 py-2">
-                    </div>
+<div id="addPaymentModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Yeni Ödeme Ekle</h3>
+        <form onsubmit="addPayment(event)">
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Tarih</label>
+                    <input type="date" id="paymentDate" required class="w-full border border-gray-300 rounded-md px-3 py-2">
                 </div>
-                <div class="flex justify-end space-x-3 mt-6">
-                    <button type="button" onclick="hideAddExpenseModal()" class="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50">
-                        İptal
-                    </button>
-                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                        Ekle
-                    </button>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Daire No</label>
+                    <select id="paymentApartment" required class="w-full border border-gray-300 rounded-md px-3 py-2" onchange="updatePaymentResident()">
+                        <option value="">Seçiniz</option>
+                        <!-- Options will be populated by JavaScript -->
+                    </select>
                 </div>
-            </form>
-        </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Sakin</label>
+                    <input type="text" id="paymentResident" readonly class="w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Ödeme Türü</label>
+                    <select id="paymentType" required class="w-full border border-gray-300 rounded-md px-3 py-2">
+                        <option value="">Seçiniz</option>
+                        <option value="Aidat">Aidat</option>
+                        <option value="Ek Ödeme">Ek Ödeme</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Açıklama</label>
+                    <input type="text" id="paymentDescription" required class="w-full border border-gray-300 rounded-md px-3 py-2" placeholder="Örn: Ocak 2024 Aidatı">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Tutar (₺)</label>
+                    <input type="number" id="paymentAmount" required min="0" step="0.01" class="w-full border border-gray-300 rounded-md px-3 py-2">
+                </div>
+            </div>
+            <div class="flex justify-end space-x-3 mt-6">
+                <button type="button" onclick="hideAddPaymentModal()" class="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50">
+                    İptal
+                </button>
+                <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                    Ekle
+                </button>
+            </div>
+        </form>
     </div>
+</div>
 
-    <div id="addPaymentModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">Yeni Ödeme Ekle</h3>
-            <form onsubmit="addPayment(event)">
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Tarih</label>
-                        <input type="date" id="paymentDate" required class="w-full border border-gray-300 rounded-md px-3 py-2">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Daire No</label>
-                        <select id="paymentApartment" required class="w-full border border-gray-300 rounded-md px-3 py-2" onchange="updatePaymentResident()">
-                            <option value="">Seçiniz</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Sakin</label>
-                        <input type="text" id="paymentResident" readonly class="w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Ödeme Türü</label>
-                        <select id="paymentType" required class="w-full border border-gray-300 rounded-md px-3 py-2" onchange="toggleMonthSelection()">
-                            <option value="">Seçiniz</option>
-                            <option value="Aidat">Aidat</option>
-                            <option value="Ek Ödeme">Ek Ödeme</option>
-                        </select>
-                    </div>
-                    <div id="monthSelectionDiv" style="display: none;">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Aidat Ayı</label>
-                        <select id="paymentMonth" class="w-full border border-gray-300 rounded-md px-3 py-2">
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Açıklama</label>
-                        <input type="text" id="paymentDescription" required class="w-full border border-gray-300 rounded-md px-3 py-2" placeholder="Örn: Haziran 2025 Aidatı">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Tutar (₺)</label>
-                        <input type="number" id="paymentAmount" required min="0" step="0.01" class="w-full border border-gray-300 rounded-md px-3 py-2">
-                    </div>
-                </div>
-                <div class="flex justify-end space-x-3 mt-6">
-                    <button type="button" onclick="hideAddPaymentModal()" class="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50">
-                        İptal
-                    </button>
-                    <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-                        Ekle
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
+<script>
+    // Global state
+    let isAdmin = false;
+    let currentUser = 'Sakin';
+    let currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM format
 
-    <script>
-        // Global state
-        let isAdmin = false;
-        let currentUser = 'Sakin';
-
-        // Sample data
-        let residents = [
-            { id: 1, apartment: 1, name: "Ahmet Yılmaz", phone: "0532 123 4567", email: "ahmet@email.com", status: "Aktif", monthlyDues: 850 },
-            { id: 2, apartment: 2, name: "Ayşe Demir", phone: "0533 234 5678", email: "ayse@email.com", status: "Aktif", monthlyDues: 920 },
-            { id: 3, apartment: 3, name: "Mehmet Kaya", phone: "0534 345 6789", email: "mehmet@email.com", status: "Aktif", monthlyDues: 780 },
-            { id: 4, apartment: 4, name: "Fatma Yıldız", phone: "0535 456 7890", email: "fatma@email.com", status: "Aktif", monthlyDues: 850 },
-            { id: 5, apartment: 5, name: "Ali Özkan", phone: "0536 567 8901", email: "ali@email.com", status: "Aktif", monthlyDues: 1050 }
-        ];
-
-        let dues = [
-            { apartment: 1, resident: "Ahmet Yılmaz", amount: 850, status: "Ödendi", lastPayment: "15.06.2025" },
-            { apartment: 2, resident: "Ayşe Demir", amount: 920, status: "Ödendi", lastPayment: "12.06.2025" },
-            { apartment: 3, resident: "Mehmet Kaya", amount: 780, status: "Kısmi", lastPayment: "10.06.2025" },
-            { apartment: 4, resident: "Fatma Yıldız", amount: 850, status: "Bekliyor", lastPayment: "-" },
-            { apartment: 5, resident: "Ali Özkan", amount: 1050, status: "Ödendi", lastPayment: "18.07.2025" }
-        ];
-
-        // Monthly dues tracking system
-        let monthlyDuesData = {};
+    // Custom alert function for sandbox environment
+    function showCustomAlert(message) {
+        // Create a temporary notification div
+        const notification = document.createElement('div');
+        notification.className = 'fixed top-4 right-4 bg-blue-600 text-white px-6 py-3 rounded-lg shadow-lg z-50 max-w-sm';
+        notification.innerHTML = `
+            <div class="flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span>${message}</span>
+            </div>
+        `;
         
-        function initializeMonthlyDues() {
-            const startDate = new Date(2025, 5, 1); // June 2025
-            const months = [];
-            
-            for (let i = 0; i < 12; i++) {
-                const date = new Date(startDate);
-                date.setMonth(startDate.getMonth() + i);
-                months.push({
-                    key: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`,
-                    name: date.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' }),
-                    shortName: date.toLocaleDateString('tr-TR', { month: 'short' })
-                });
+        document.body.appendChild(notification);
+        
+        // Remove after 3 seconds
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
             }
-            
-            residents.forEach(resident => {
-                if (!monthlyDuesData[resident.apartment]) {
-                    monthlyDuesData[resident.apartment] = {};
-                }
-                
-                months.forEach(month => {
-                    if (!monthlyDuesData[resident.apartment][month.key]) {
-                        monthlyDuesData[resident.apartment][month.key] = {
-                            status: 'Bekliyor',
-                            paidAmount: 0,
-                            dueAmount: resident.monthlyDues,
-                            payments: []
-                        };
-                    }
-                });
-            });
-            
-            // Set some sample payments
-            monthlyDuesData[1]['2025-06'] = { status: 'Ödendi', paidAmount: 850, dueAmount: 850, payments: [] };
-            monthlyDuesData[2]['2025-06'] = { status: 'Ödendi', paidAmount: 920, dueAmount: 920, payments: [] };
-            monthlyDuesData[3]['2025-06'] = { status: 'Kısmi', paidAmount: 400, dueAmount: 780, payments: [] };
-            monthlyDuesData[5]['2025-07'] = { status: 'Ödendi', paidAmount: 1050, dueAmount: 1050, payments: [] };
-            
-            return months;
-        }
+        }, 3000);
+        
+        console.log('📢 Custom Alert:', message);
+    }
 
-        let payments = [
-            { id: 1, apartment: 1, resident: "Ahmet Yılmaz", amount: 850, date: "2025-06-15", description: "Haziran 2025 Aidatı", type: "Aidat", month: "2025-06" },
-            { id: 2, apartment: 2, resident: "Ayşe Demir", amount: 920, date: "2025-06-12", description: "Haziran 2025 Aidatı", type: "Aidat", month: "2025-06" },
-            { id: 3, apartment: 3, resident: "Mehmet Kaya", amount: 400, date: "2025-06-10", description: "Haziran 2025 Aidatı (Kısmi)", type: "Aidat", month: "2025-06" },
-            { id: 4, apartment: 5, resident: "Ali Özkan", amount: 1050, date: "2025-07-18", description: "Temmuz 2025 Aidatı", type: "Aidat", month: "2025-07" },
-            { id: 5, apartment: 1, resident: "Ahmet Yılmaz", amount: 200, date: "2025-06-20", description: "Asansör Bakım Payı", type: "Ek Ödeme", month: "2025-06" },
-            { id: 6, apartment: 2, resident: "Ayşe Demir", amount: 150, date: "2025-07-22", description: "Temizlik Malzeme Payı", type: "Ek Ödeme", month: "2025-07" }
-        ];
+    // Sample data
+    let residents = [
+        { id: 1, apartment: 1, name: "Ahmet Yılmaz", phone: "0532 123 4567", email: "ahmet@email.com", status: "Aktif", monthlyDues: 850 },
+        { id: 2, apartment: 2, name: "Ayşe Demir", phone: "0533 234 5678", email: "ayse@email.com", status: "Aktif", monthlyDues: 920 },
+        { id: 3, apartment: 3, name: "Mehmet Kaya", phone: "0534 345 6789", email: "mehmet@email.com", status: "Aktif", monthlyDues: 780 },
+        { id: 4, apartment: 4, name: "Fatma Yıldız", phone: "0535 456 7890", email: "fatma@email.com", status: "Aktif", monthlyDues: 850 },
+        { id: 5, apartment: 5, name: "Ali Özkan", phone: "0536 567 8901", email: "ali@email.com", status: "Aktif", monthlyDues: 1050 }
+    ];
 
-        let expenses = [
-            { id: 1, date: "2025-06-15", description: "Temizlik Malzemesi", category: "Temizlik", amount: 450 },
-            { id: 2, date: "2025-06-10", description: "Elektrik Faturası", category: "Elektrik", amount: 2800 },
-            { id: 3, date: "2025-06-08", description: "Su Faturası", category: "Su", amount: 1200 },
-            { id: 4, date: "2025-06-05", description: "Asansör Bakımı", category: "Bakım-Onarım", amount: 1500 }
-        ];
+    let dues = [
+        { apartment: 1, resident: "Ahmet Yılmaz", amount: 850, status: "Ödendi", lastPayment: "15.01.2024" },
+        { apartment: 2, resident: "Ayşe Demir", amount: 920, status: "Ödendi", lastPayment: "12.01.2024" },
+        { apartment: 3, resident: "Mehmet Kaya", amount: 780, status: "Kısmi", lastPayment: "10.01.2024" },
+        { apartment: 4, resident: "Fatma Yıldız", amount: 850, status: "Bekliyor", lastPayment: "-" },
+        { apartment: 5, resident: "Ali Özkan", amount: 1050, status: "Ödendi", lastPayment: "18.01.2024" }
+    ];
 
-        // Custom alert function
-        function showCustomAlert(message) {
-            const notification = document.createElement('div');
-            notification.className = 'fixed top-4 right-4 bg-blue-600 text-white px-6 py-3 rounded-lg shadow-lg z-50 max-w-sm';
-            notification.innerHTML = `
-                <div class="flex items-center">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    <span>${message}</span>
-                </div>
-            `;
-            
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                if (notification.parentNode) {
-                    notification.parentNode.removeChild(notification);
-                }
-            }, 3000);
-        }
+    let payments = [
+        { id: 1, apartment: 1, resident: "Ahmet Yılmaz", amount: 850, date: "2024-01-15", description: "Ocak 2024 Aidatı", type: "Aidat" },
+        { id: 2, apartment: 2, resident: "Ayşe Demir", amount: 920, date: "2024-01-12", description: "Ocak 2024 Aidatı", type: "Aidat" },
+        { id: 3, apartment: 3, resident: "Mehmet Kaya", amount: 400, date: "2024-01-10", description: "Ocak 2024 Aidatı (Kısmi)", type: "Aidat" },
+        { id: 4, apartment: 5, resident: "Ali Özkan", amount: 1050, date: "2024-01-18", description: "Ocak 2024 Aidatı", type: "Aidat" },
+        { id: 5, apartment: 1, resident: "Ahmet Yılmaz", amount: 200, date: "2024-01-20", description: "Asansör Bakım Payı", type: "Ek Ödeme" },
+        { id: 6, apartment: 2, resident: "Ayşe Demir", amount: 150, date: "2024-01-22", description: "Temizlik Malzeme Payı", type: "Ek Ödeme" },
+        { id: 7, apartment: 3, resident: "Mehmet Kaya", amount: 380, date: "2024-01-25", description: "Ocak 2024 Aidatı (Kalan)", type: "Aidat" }
+    ];
 
-        // Admin login functions
-        function toggleAdminLogin() {
-            if (isAdmin) {
-                if (confirm('Yönetici modundan çıkmak istediğiniz emin misiniz?')) {
-                    logout();
-                }
-            } else {
-                showAdminLogin();
+    let expenses = [
+        { id: 1, date: "2024-01-15", description: "Temizlik Malzemesi", category: "Temizlik", amount: 450 },
+        { id: 2, date: "2024-01-10", description: "Elektrik Faturası", category: "Elektrik", amount: 2800 },
+        { id: 3, date: "2024-01-08", description: "Su Faturası", category: "Su", amount: 1200 },
+        { id: 4, date: "2024-01-05", description: "Asansör Bakımı", category: "Bakım-Onarım", amount: 1500 }
+    ];
+
+    // Admin login functions
+    function toggleAdminLogin() {
+        if (isAdmin) {
+            // Logout
+            if (confirm('Yönetici modundan çıkmak istediğiniz emin misiniz?')) {
+                logout();
             }
+        } else {
+            // Show login modal
+            showAdminLogin();
         }
+    }
 
-        function showAdminLogin() {
-            document.getElementById('adminLoginModal').style.display = 'flex';
-            setTimeout(() => {
-                document.getElementById('adminUsername').focus();
-            }, 100);
-        }
+    function showAdminLogin() {
+        document.getElementById('adminLoginModal').classList.remove('hidden');
+        document.getElementById('adminLoginModal').classList.add('flex');
+        document.getElementById('adminUsername').focus();
+    }
 
-        function hideAdminLogin() {
-            document.getElementById('adminLoginModal').style.display = 'none';
-            document.getElementById('adminUsername').value = '';
-            document.getElementById('adminPassword').value = '';
-        }
+    function hideAdminLogin() {
+        document.getElementById('adminLoginModal').classList.add('hidden');
+        document.getElementById('adminLoginModal').classList.remove('flex');
+        document.getElementById('adminUsername').value = '';
+        document.getElementById('adminPassword').value = '';
+    }
 
-        function handleAdminLogin(event) {
-            event.preventDefault();
-            const username = document.getElementById('adminUsername').value.trim().toLowerCase();
-            const password = document.getElementById('adminPassword').value;
+    function handleAdminLogin(event) {
+        event.preventDefault();
+        
+        const username = document.getElementById('adminUsername').value.trim().toLowerCase();
+        const password = document.getElementById('adminPassword').value;
+        
+        // Check admin credentials
+        if ((username === 'admin' && password === '123456') || 
+            (username === 'yonetici' && password === 'bina2024')) {
             
-            if ((username === 'admin' && password === '123456') || 
-                (username === 'yonetici' && password === 'bina2024')) {
-                
-                isAdmin = true;
-                currentUser = username === 'admin' ? 'Sistem Yöneticisi' : 'Ahmet Yılmaz';
-                
-                updateUserInterface();
-                hideAdminLogin();
-                showCustomAlert('Yönetici girişi başarılı! Artık düzenleme yapabilirsiniz.');
-                
-            } else {
-                showCustomAlert('Hatalı kullanıcı adı veya şifre! Demo hesap: admin / 123456');
-                document.getElementById('adminPassword').value = '';
-                document.getElementById('adminUsername').focus();
-            }
-        }
-
-        function logout() {
-            isAdmin = false;
-            currentUser = 'Sakin';
+            // Set admin mode
+            isAdmin = true;
+            currentUser = username === 'admin' ? 'Sistem Yöneticisi' : 'Ahmet Yılmaz';
+            
+            // Update UI
             updateUserInterface();
-            showCustomAlert('Yönetici modundan çıkış yapıldı.');
+            
+            // Hide modal
+            hideAdminLogin();
+            
+            showCustomAlert('Yönetici girişi başarılı! Artık düzenleme yapabilirsiniz.');
+            
+        } else {
+            showCustomAlert('Hatalı kullanıcı adı veya şifre! Demo hesap: admin / 123456');
+            document.getElementById('adminPassword').value = '';
+            document.getElementById('adminUsername').focus();
         }
+    }
 
-        function updateUserInterface() {
-            document.getElementById('currentUserName').textContent = currentUser;
-            
-            const userStatus = document.getElementById('userStatus');
-            const loginButton = document.querySelector('button[onclick="toggleAdminLogin()"]');
-            
-            if (isAdmin) {
-                userStatus.textContent = 'Yönetici Modu';
-                userStatus.className = 'text-xs px-2 py-1 rounded-full bg-green-100 text-green-600';
-                
-                loginButton.innerHTML = `
-                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
-                    </svg>
-                    Çıkış Yap
-                `;
-                loginButton.className = 'text-sm text-red-600 hover:text-red-800 font-medium flex items-center';
-                
-                document.querySelectorAll('.admin-only').forEach(element => {
-                    element.style.display = '';
-                    if (element.tagName === 'TH' || element.tagName === 'TD') {
-                        element.style.display = 'table-cell';
-                    }
-                });
-                
-            } else {
-                userStatus.textContent = 'Görüntüleme Modu';
-                userStatus.className = 'text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600';
-                
-                loginButton.innerHTML = `
-                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
-                    </svg>
-                    Yönetici Girişi
-                `;
-                loginButton.className = 'text-sm text-blue-600 hover:text-blue-800 font-medium flex items-center';
-                
-                document.querySelectorAll('.admin-only').forEach(element => {
-                    element.style.display = 'none';
-                });
-            }
-            
-            // Refresh current tab data
-            const activeTab = document.querySelector('.tab-content.active');
-            if (activeTab) {
-                const tabId = activeTab.id;
-                if (tabId === 'residents') loadResidents();
-                else if (tabId === 'dues') loadDues();
-                else if (tabId === 'expenses') loadExpenses();
-            }
-        }
+    function logout() {
+        isAdmin = false;
+        currentUser = 'Sakin';
+        updateUserInterface();
+        showCustomAlert('Yönetici modundan çıkış yapıldı.');
+    }
 
-        // Tab functionality
-        function showTab(tabName, element) {
-            // Hide all tab contents
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.remove('active');
-                tab.style.display = 'none';
+    function updateUserInterface() {
+        // Update user name and status
+        document.getElementById('currentUserName').textContent = currentUser;
+        
+        const userStatus = document.getElementById('userStatus');
+        const loginButton = document.getElementById('loginButton');
+        
+        if (isAdmin) {
+            userStatus.textContent = 'Yönetici Modu';
+            userStatus.className = 'text-xs px-2 py-1 rounded-full bg-green-100 text-green-600';
+            
+            loginButton.innerHTML = `
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+                </svg>
+                Çıkış Yap
+            `;
+            loginButton.className = 'text-sm text-red-600 hover:text-red-800 font-medium flex items-center';
+            
+            // Show admin-only elements
+            document.querySelectorAll('.admin-only').forEach(element => {
+                element.classList.add('show');
+                element.style.display = '';
+                if (element.tagName === 'TH' || element.tagName === 'TD') {
+                    element.style.display = 'table-cell';
+                }
             });
             
-            // Reset all tab buttons
-            document.querySelectorAll('.tab-button').forEach(btn => {
-                btn.classList.remove('active');
-                btn.classList.remove('border-blue-600', 'text-blue-600');
-                btn.classList.add('border-transparent', 'text-gray-500');
+        } else {
+            userStatus.textContent = 'Görüntüleme Modu';
+            userStatus.className = 'text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600';
+            
+            loginButton.innerHTML = `
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+                </svg>
+                Yönetici Girişi
+            `;
+            loginButton.className = 'text-sm text-blue-600 hover:text-blue-800 font-medium flex items-center';
+            
+            // Hide admin-only elements
+            document.querySelectorAll('.admin-only').forEach(element => {
+                element.classList.remove('show');
+                element.style.display = 'none';
             });
+        }
+        
+        // Reload current tab data
+        const activeTab = document.querySelector('.tab-content.active');
+        if (activeTab) {
+            const tabId = activeTab.id;
+            if (tabId === 'residents') loadResidents();
+            else if (tabId === 'dues') loadDues();
+            else if (tabId === 'expenses') loadExpenses();
+        }
+    }
+
+    // Tab functionality
+    function showTab(tabName) {
+        // Hide all tabs
+        document.querySelectorAll('.tab-content').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        
+        // Remove active class from all buttons
+        document.querySelectorAll('.tab-button').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        
+        // Show selected tab
+        document.getElementById(tabName).classList.add('active');
+        
+        // Add active class to clicked button
+        event.target.classList.add('active');
+        
+        // Load data for specific tabs
+        if (tabName === 'residents') {
+            loadResidents();
+        } else if (tabName === 'dues') {
+            loadDues();
+        } else if (tabName === 'expenses') {
+            loadExpenses();
+        } else if (tabName === 'reports') {
+            loadCharts();
+        }
+    }
+
+    // Load residents table
+    function loadResidents() {
+        const tbody = document.getElementById('residentsTable');
+        tbody.innerHTML = residents.map(resident => `
+            <tr>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${resident.apartment}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${resident.name}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${resident.phone}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${resident.email}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">₺${resident.monthlyDues}</td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                        ${resident.status}
+                    </span>
+                </td>
+                <td class="admin-only px-6 py-4 whitespace-nowrap text-sm font-medium" style="${isAdmin ? 'display: table-cell;' : 'display: none;'}">
+                    <button type="button" onclick="editResident(${resident.id})" class="text-blue-600 hover:text-blue-900 mr-3 px-2 py-1 rounded hover:bg-blue-50 border border-blue-300 hover:border-blue-500">Düzenle</button>
+                    <button type="button" onclick="deleteResident(${resident.id})" class="text-red-600 hover:text-red-900 px-2 py-1 rounded hover:bg-red-50 border border-red-300 hover:border-red-500">Sil</button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    // Load dues table
+    function loadDues() {
+        const tbody = document.getElementById('duesTable');
+        tbody.innerHTML = residents.map((resident, index) => {
+            // Calculate payments for this resident
+            const residentPayments = payments.filter(p => p.apartment === resident.apartment);
+            const totalPaid = residentPayments.reduce((sum, p) => sum + p.amount, 0);
+            const remaining = Math.max(0, resident.monthlyDues - totalPaid);
             
-            // Show selected tab
-            const selectedTab = document.getElementById(tabName);
-            if (selectedTab) {
-                selectedTab.classList.add('active');
-                selectedTab.style.display = 'block';
+            let status = 'Ödendi';
+            let statusColor = 'bg-green-100 text-green-800';
+            
+            if (remaining > 0) {
+                if (totalPaid > 0) {
+                    status = 'Kısmi';
+                    statusColor = 'bg-yellow-100 text-yellow-800';
+                } else {
+                    status = 'Bekliyor';
+                    statusColor = 'bg-red-100 text-red-800';
+                }
             }
             
-            // Activate selected button
-            if (element) {
-                element.classList.add('active');
-                element.classList.remove('border-transparent', 'text-gray-500');
-                element.classList.add('border-blue-600', 'text-blue-600');
-            }
-            
-            // Load data for specific tabs
-            setTimeout(() => {
-                if (tabName === 'residents') {
-                    loadResidents();
-                } else if (tabName === 'dues') {
-                    loadDues();
-                } else if (tabName === 'expenses') {
-                    loadExpenses();
-                }
-            }, 100);
-        }
-
-        // Load residents table
-        function loadResidents() {
-            const tbody = document.getElementById('residentsTable');
-            tbody.innerHTML = residents.map(resident => `
-                <tr>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${resident.apartment}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${resident.name}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${resident.phone}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${resident.email}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">₺${resident.monthlyDues}</td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                            ${resident.status}
-                        </span>
-                    </td>
-                    <td class="admin-only px-6 py-4 whitespace-nowrap text-sm font-medium" style="${isAdmin ? 'display: table-cell;' : 'display: none;'}">
-                        <button onclick="editResident(${resident.id})" class="text-indigo-600 hover:text-indigo-900 mr-2">Düzenle</button>
-                        <button onclick="deleteResident(${resident.id})" class="text-red-600 hover:text-red-900">Sil</button>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        // Load dues table
-        function loadDues() {
-            initializeMonthlyDues();
-            loadMonthlyDuesTable();
-            loadDuesTable();
-            loadPaymentHistory();
-        }
-
-        function loadMonthlyDuesTable() {
-            const months = initializeMonthlyDues();
-            const tbody = document.getElementById('monthlyDuesTable');
-            
-            tbody.innerHTML = residents.map(resident => {
-                let totalPaid = 0;
-                let totalDue = 0;
-                
-                const monthCells = months.map(month => {
-                    const monthData = monthlyDuesData[resident.apartment][month.key];
-                    totalPaid += monthData.paidAmount;
-                    totalDue += monthData.dueAmount;
-                    
-                    let cellClass = 'px-2 py-2 text-center text-xs';
-                    let cellContent = '';
-                    
-                    if (monthData.status === 'Ödendi') {
-                        cellClass += ' bg-green-100 text-green-800';
-                        cellContent = '✓';
-                    } else if (monthData.status === 'Kısmi') {
-                        cellClass += ' bg-yellow-100 text-yellow-800';
-                        cellContent = '◐';
-                    } else {
-                        cellClass += ' bg-red-100 text-red-800';
-                        cellContent = '✗';
-                    }
-                    
-                    return `<td class="${cellClass}">
-                        <input type="checkbox" class="admin-only month-checkbox mr-1" data-apartment="${resident.apartment}" data-month="${month.key}" style="${isAdmin ? 'display: inline;' : 'display: none;'}">
-                        ${cellContent}
-                    </td>`;
-                }).join('');
-                
-                return `
-                    <tr>
-                        <td class="admin-only px-2 py-2 text-center" style="${isAdmin ? 'display: table-cell;' : 'display: none;'}">
-                            <input type="checkbox" class="apartment-checkbox" data-apartment="${resident.apartment}">
-                        </td>
-                        <td class="px-2 py-2 text-sm font-medium text-gray-900 sticky left-0 bg-white z-10 border-r">${resident.apartment}</td>
-                        <td class="px-2 py-2 text-sm text-gray-900 sticky left-12 bg-white z-10 border-r">${resident.name}</td>
-                        ${monthCells}
-                        <td class="px-2 py-2 text-center text-sm font-medium ${totalPaid >= totalDue ? 'text-green-600' : 'text-red-600'}">
-                            ₺${totalPaid}
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
-        function loadDuesTable() {
-            const tbody = document.getElementById('duesTable');
-            tbody.innerHTML = dues.map(due => {
-                let statusClass = '';
-                let statusText = due.status;
-                
-                switch(due.status) {
-                    case 'Ödendi':
-                        statusClass = 'bg-green-100 text-green-800';
-                        break;
-                    case 'Kısmi':
-                        statusClass = 'bg-yellow-100 text-yellow-800';
-                        break;
-                    case 'Bekliyor':
-                        statusClass = 'bg-red-100 text-red-800';
-                        break;
-                }
-                
-                return `
-                    <tr>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${due.apartment}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${due.resident}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">₺${due.amount}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">
-                                ${statusText}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${due.lastPayment}</td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
-        function loadPaymentHistory() {
-            const container = document.getElementById('paymentHistory');
-            const recentPayments = payments.slice(-10).reverse();
-            
-            container.innerHTML = recentPayments.map(payment => `
-                <div class="flex justify-between items-center p-2 bg-gray-50 rounded text-xs">
-                    <div>
-                        <div class="font-medium">Daire ${payment.apartment} - ${payment.resident}</div>
-                        <div class="text-gray-500">${payment.description}</div>
-                        <div class="text-gray-400">${new Date(payment.date).toLocaleDateString('tr-TR')}</div>
+            // Create payment list HTML
+            const paymentListHtml = residentPayments.length > 0 ? 
+                residentPayments.map(payment => `
+                    <div class="flex items-center justify-between py-2 px-4 border-b border-gray-100 last:border-b-0">
+                        <div class="flex-1">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-medium text-gray-900">${payment.description}</span>
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full ${payment.type === 'Aidat' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}">
+                                    ${payment.type}
+                                </span>
+                            </div>
+                            <div class="flex items-center justify-between mt-1">
+                                <span class="text-xs text-gray-500">${new Date(payment.date).toLocaleDateString('tr-TR')}</span>
+                                <span class="text-sm font-bold text-green-600">₺${payment.amount.toLocaleString('tr-TR')}</span>
+                            </div>
+                        </div>
+                        <div class="admin-only ml-4" style="${isAdmin ? 'display: flex;' : 'display: none;'}">
+                            <button type="button" onclick="editPayment(${payment.id})" class="text-blue-600 hover:text-blue-900 text-xs px-2 py-1 rounded hover:bg-blue-50 border border-blue-300 hover:border-blue-500 mr-1">Düzenle</button>
+                            <button type="button" onclick="deletePayment(${payment.id})" class="text-red-600 hover:text-red-900 text-xs px-2 py-1 rounded hover:bg-red-50 border border-red-300 hover:border-red-500">Sil</button>
+                        </div>
                     </div>
-                    <div class="text-green-600 font-medium">₺${payment.amount}</div>
+                `).join('') : 
+                '<div class="py-4 px-4 text-center text-gray-500 text-sm">Henüz ödeme yapılmamış</div>';
+            
+            return `
+            <tr class="border-b border-gray-200">
+                <td class="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-900">${resident.apartment}</td>
+                <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-900">${resident.name}</td>
+                <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-900">₺${resident.monthlyDues.toLocaleString('tr-TR')}</td>
+                <td class="px-3 py-2 whitespace-nowrap text-sm font-medium text-green-600">₺${totalPaid.toLocaleString('tr-TR')}</td>
+                <td class="px-3 py-2 whitespace-nowrap text-sm font-medium text-red-600">₺${remaining.toLocaleString('tr-TR')}</td>
+                <td class="px-3 py-2 whitespace-nowrap">
+                    <span class="px-2 inline-flex text-xs leading-4 font-semibold rounded-full ${statusColor}">
+                        ${status}
+                    </span>
+                </td>
+                <td class="px-3 py-2 whitespace-nowrap text-sm">
+                    <button type="button" onclick="togglePaymentDetails(${index})" class="flex items-center text-blue-600 hover:text-blue-900 font-medium text-xs">
+                        <span class="mr-1">${residentPayments.length} Ödeme</span>
+                        <svg class="w-3 h-3 transform transition-transform duration-200" id="arrow-${index}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                </td>
+                <td class="admin-only px-3 py-2 whitespace-nowrap text-sm font-medium" style="${isAdmin ? 'display: table-cell;' : 'display: none;'}">
+                    <button type="button" onclick="viewPaymentDetails(${resident.apartment})" class="text-blue-600 hover:text-blue-900 px-2 py-1 rounded hover:bg-blue-50 border border-blue-300 hover:border-blue-500 text-xs">Detay</button>
+                </td>
+            </tr>
+            <tr id="payment-details-${index}" class="hidden">
+                <td colspan="8" class="px-0 py-0">
+                    <div class="bg-gray-50 border-t border-gray-200">
+                        <div class="px-4 py-3">
+                            <h4 class="text-sm font-medium text-gray-900 mb-2">Ödeme Geçmişi - ${resident.name}</h4>
+                            <div class="bg-white rounded-lg border border-gray-200 max-h-48 overflow-y-auto">
+                                ${paymentListHtml}
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            `;
+        }).join('');
+        
+        updateDuesStatistics();
+        loadPaymentHistory();
+    }
+
+    // Load expenses table
+    function loadExpenses() {
+        const tbody = document.getElementById('expensesTable');
+        tbody.innerHTML = expenses.map(expense => `
+            <tr>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${new Date(expense.date).toLocaleDateString('tr-TR')}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${expense.description}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${expense.category}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">₺${expense.amount}</td>
+                <td class="admin-only px-6 py-4 whitespace-nowrap text-sm font-medium" style="${isAdmin ? 'display: table-cell;' : 'display: none;'}">
+                    <button type="button" onclick="editExpense(${expense.id})" class="text-blue-600 hover:text-blue-900 mr-3 px-2 py-1 rounded hover:bg-blue-50 border border-blue-300 hover:border-blue-500">Düzenle</button>
+                    <button type="button" onclick="deleteExpense(${expense.id})" class="text-red-600 hover:text-red-900 px-2 py-1 rounded hover:bg-red-50 border border-red-300 hover:border-red-500">Sil</button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+
+
+    function updatePaymentStatistics() {
+        const currentDate = new Date();
+        const currentMonth = currentDate.getMonth();
+        const currentYear = currentDate.getFullYear();
+        
+        // Filter payments for current month
+        const monthlyPayments = payments.filter(payment => {
+            const paymentDate = new Date(payment.date);
+            return paymentDate.getMonth() === currentMonth && paymentDate.getFullYear() === currentYear;
+        });
+        
+        const monthlyTotal = monthlyPayments.reduce((sum, payment) => sum + payment.amount, 0);
+        const duesPayments = monthlyPayments.filter(p => p.type === 'Aidat').reduce((sum, p) => sum + p.amount, 0);
+        const extraPayments = monthlyPayments.filter(p => p.type === 'Ek Ödeme').reduce((sum, p) => sum + p.amount, 0);
+        const paymentCount = monthlyPayments.length;
+        
+        // Update elements if they exist
+        const monthlyPaymentsTotalEl = document.getElementById('monthlyPaymentsTotal');
+        const duesPaymentsTotalEl = document.getElementById('duesPaymentsTotal');
+        const extraPaymentsTotalEl = document.getElementById('extraPaymentsTotal');
+        const paymentCountEl = document.getElementById('paymentCount');
+        
+        if (monthlyPaymentsTotalEl) monthlyPaymentsTotalEl.textContent = `₺${monthlyTotal.toLocaleString('tr-TR')}`;
+        if (duesPaymentsTotalEl) duesPaymentsTotalEl.textContent = `₺${duesPayments.toLocaleString('tr-TR')}`;
+        if (extraPaymentsTotalEl) extraPaymentsTotalEl.textContent = `₺${extraPayments.toLocaleString('tr-TR')}`;
+        if (paymentCountEl) paymentCountEl.textContent = paymentCount.toString();
+    }
+
+    function viewPaymentDetails(apartmentNo) {
+        if (!isAdmin) {
+            showCustomAlert('Bu işlem için yönetici girişi gereklidir.');
+            return;
+        }
+        
+        const resident = residents.find(r => r.apartment === apartmentNo);
+        const residentPayments = payments.filter(p => p.apartment === apartmentNo);
+        
+        if (!resident) {
+            showCustomAlert('Sakin bulunamadı!');
+            return;
+        }
+        
+        let message = `${resident.name} (Daire ${apartmentNo}) - Ödeme Detayları:\n\n`;
+        message += `Aylık Aidat: ₺${resident.monthlyDues.toLocaleString('tr-TR')}\n`;
+        message += `Toplam Ödenen: ₺${residentPayments.reduce((sum, p) => sum + p.amount, 0).toLocaleString('tr-TR')}\n`;
+        message += `Kalan: ₺${Math.max(0, resident.monthlyDues - residentPayments.reduce((sum, p) => sum + p.amount, 0)).toLocaleString('tr-TR')}\n\n`;
+        
+        if (residentPayments.length > 0) {
+            message += 'Ödemeler:\n';
+            residentPayments.forEach(payment => {
+                message += `• ${new Date(payment.date).toLocaleDateString('tr-TR')} - ${payment.description} - ₺${payment.amount.toLocaleString('tr-TR')} (${payment.type})\n`;
+            });
+        } else {
+            message += 'Henüz ödeme yapılmamış.';
+        }
+        
+        showCustomAlert(message);
+    }
+
+    // Load payment history
+    function loadPaymentHistory() {
+        const historyDiv = document.getElementById('paymentHistory');
+        
+        // Sort payments by date (newest first)
+        const sortedPayments = [...payments].sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        if (sortedPayments.length === 0) {
+            historyDiv.innerHTML = '<p class="text-gray-500 text-center py-8">Henüz ödeme kaydı bulunmuyor</p>';
+            return;
+        }
+        
+        historyDiv.innerHTML = sortedPayments.map(payment => {
+            const typeColor = payment.type === 'Aidat' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800';
+            
+            return `
+            <div class="border-l-3 border-green-400 bg-green-50 p-2 rounded-r-lg">
+                <div class="flex items-start justify-between">
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center justify-between mb-1">
+                            <h4 class="text-xs font-medium text-gray-900 truncate">Daire ${payment.apartment}</h4>
+                            <span class="px-1 py-0.5 text-xs font-semibold rounded-full ${typeColor} ml-1">
+                                ${payment.type}
+                            </span>
+                        </div>
+                        <p class="text-xs text-gray-700 mb-1 truncate">${payment.description}</p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs text-gray-500">${new Date(payment.date).toLocaleDateString('tr-TR')}</span>
+                            <span class="text-sm font-bold text-green-600">₺${payment.amount.toLocaleString('tr-TR')}</span>
+                        </div>
+                    </div>
+                    <div class="admin-only ml-2 flex flex-col space-y-1" style="${isAdmin ? 'display: flex;' : 'display: none;'}">
+                        <button type="button" onclick="editPayment(${payment.id})" class="text-blue-600 hover:text-blue-900 text-xs px-1 py-0.5 rounded hover:bg-blue-50 border border-blue-300 hover:border-blue-500">Düzenle</button>
+                        <button type="button" onclick="deletePayment(${payment.id})" class="text-red-600 hover:text-red-900 text-xs px-1 py-0.5 rounded hover:bg-red-50 border border-red-300 hover:border-red-500">Sil</button>
+                    </div>
                 </div>
-            `).join('');
-        }
+            </div>
+            `;
+        }).join('');
+    }
 
-        // Load expenses table
-        function loadExpenses() {
-            const tbody = document.getElementById('expensesTable');
-            tbody.innerHTML = expenses.map(expense => `
-                <tr>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${new Date(expense.date).toLocaleDateString('tr-TR')}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${expense.description}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${expense.category}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">₺${expense.amount}</td>
-                    <td class="admin-only px-6 py-4 whitespace-nowrap text-sm font-medium" style="${isAdmin ? 'display: table-cell;' : 'display: none;'}">
-                        <button onclick="editExpense(${expense.id})" class="text-indigo-600 hover:text-indigo-900 mr-2">Düzenle</button>
-                        <button onclick="deleteExpense(${expense.id})" class="text-red-600 hover:text-red-900">Sil</button>
-                    </td>
-                </tr>
-            `).join('');
-        }
+    // Update dues statistics
+    function updateDuesStatistics() {
+        const totalDues = residents.reduce((sum, resident) => sum + resident.monthlyDues, 0);
+        const totalPaid = payments.reduce((sum, payment) => sum + payment.amount, 0);
+        const totalRemaining = Math.max(0, totalDues - totalPaid);
+        const collectionRate = totalDues > 0 ? Math.round((totalPaid / totalDues) * 100) : 0;
+        
+        document.getElementById('totalDues').textContent = `₺${totalDues.toLocaleString('tr-TR')}`;
+        document.getElementById('totalPaid').textContent = `₺${totalPaid.toLocaleString('tr-TR')}`;
+        document.getElementById('totalRemaining').textContent = `₺${totalRemaining.toLocaleString('tr-TR')}`;
+        document.getElementById('collectionRate').textContent = `${collectionRate}%`;
+        
+        updatePaymentStatistics();
+    }
 
-        // Modal functions
-        function showAddResidentModal() {
-            if (!isAdmin) {
-                showCustomAlert('Bu işlem için yönetici girişi gereklidir.');
-                return;
+    // Modal functions (Admin only)
+    function showAddResidentModal() {
+        if (!isAdmin) {
+            alert('Bu işlem için yönetici girişi gereklidir.');
+            return;
+        }
+        document.getElementById('addResidentModal').classList.remove('hidden');
+        document.getElementById('addResidentModal').classList.add('flex');
+    }
+
+    function hideAddResidentModal() {
+        document.getElementById('addResidentModal').classList.add('hidden');
+        document.getElementById('addResidentModal').classList.remove('flex');
+    }
+
+    function showAddExpenseModal() {
+        if (!isAdmin) {
+            alert('Bu işlem için yönetici girişi gereklidir.');
+            return;
+        }
+        document.getElementById('addExpenseModal').classList.remove('hidden');
+        document.getElementById('addExpenseModal').classList.add('flex');
+        
+        // Set today's date
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('expenseDate').value = today;
+    }
+
+    function hideAddExpenseModal() {
+        document.getElementById('addExpenseModal').classList.add('hidden');
+        document.getElementById('addExpenseModal').classList.remove('flex');
+    }
+
+    function showAddPaymentModal() {
+        if (!isAdmin) {
+            showCustomAlert('Bu işlem için yönetici girişi gereklidir.');
+            return;
+        }
+        
+        // Populate apartment dropdown
+        const apartmentSelect = document.getElementById('paymentApartment');
+        apartmentSelect.innerHTML = '<option value="">Seçiniz</option>' + 
+            residents.map(resident => 
+                `<option value="${resident.apartment}" data-resident="${resident.name}">${resident.apartment} - ${resident.name}</option>`
+            ).join('');
+        
+        document.getElementById('addPaymentModal').classList.remove('hidden');
+        document.getElementById('addPaymentModal').classList.add('flex');
+        
+        // Set today's date
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('paymentDate').value = today;
+    }
+
+    function hideAddPaymentModal() {
+        document.getElementById('addPaymentModal').classList.add('hidden');
+        document.getElementById('addPaymentModal').classList.remove('flex');
+    }
+
+    function updatePaymentResident() {
+        const apartmentSelect = document.getElementById('paymentApartment');
+        const residentInput = document.getElementById('paymentResident');
+        
+        if (apartmentSelect.value) {
+            const selectedOption = apartmentSelect.options[apartmentSelect.selectedIndex];
+            residentInput.value = selectedOption.dataset.resident || '';
+        } else {
+            residentInput.value = '';
+        }
+    }
+
+    // CRUD functions (Admin only)
+    function addResident(event) {
+        event.preventDefault();
+        if (!isAdmin) return;
+        
+        const modal = document.getElementById('addResidentModal');
+        const editId = modal.dataset.editId;
+        
+        if (editId) {
+            // Update existing resident
+            const residentIndex = residents.findIndex(r => r.id === parseInt(editId));
+            if (residentIndex !== -1) {
+                residents[residentIndex] = {
+                    ...residents[residentIndex],
+                    apartment: parseInt(document.getElementById('apartmentNo').value),
+                    name: document.getElementById('residentName').value,
+                    phone: document.getElementById('residentPhone').value,
+                    email: document.getElementById('residentEmail').value,
+                    monthlyDues: parseFloat(document.getElementById('residentDues').value)
+                };
+                
+                // Update dues table if apartment number changed
+                const dueIndex = dues.findIndex(d => d.apartment === residents[residentIndex].apartment);
+                if (dueIndex !== -1) {
+                    dues[dueIndex].resident = residents[residentIndex].name;
+                    dues[dueIndex].amount = residents[residentIndex].monthlyDues;
+                }
+                
+                showCustomAlert('Sakin bilgileri başarıyla güncellendi!');
             }
-            document.getElementById('addResidentModal').style.display = 'flex';
-        }
-
-        function hideAddResidentModal() {
-            document.getElementById('addResidentModal').style.display = 'none';
-        }
-
-        function showAddExpenseModal() {
-            if (!isAdmin) {
-                showCustomAlert('Bu işlem için yönetici girişi gereklidir.');
-                return;
-            }
-            document.getElementById('expenseDate').value = new Date().toISOString().split('T')[0];
-            document.getElementById('addExpenseModal').style.display = 'flex';
-        }
-
-        function hideAddExpenseModal() {
-            document.getElementById('addExpenseModal').style.display = 'none';
-        }
-
-        function showAddPaymentModal() {
-            if (!isAdmin) {
-                showCustomAlert('Bu işlem için yönetici girişi gereklidir.');
-                return;
-            }
             
-            // Populate apartment dropdown
-            const apartmentSelect = document.getElementById('paymentApartment');
-            apartmentSelect.innerHTML = '<option value="">Seçiniz</option>' + 
-                residents.map(r => `<option value="${r.apartment}">${r.apartment} - ${r.name}</option>`).join('');
+            // Reset modal
+            delete modal.dataset.editId;
+            document.querySelector('#addResidentModal h3').textContent = 'Yeni Sakin Ekle';
+            document.querySelector('#addResidentModal button[type="submit"]').textContent = 'Ekle';
             
-            // Populate month dropdown
-            const monthSelect = document.getElementById('paymentMonth');
-            const months = initializeMonthlyDues();
-            monthSelect.innerHTML = months.map(m => `<option value="${m.key}">${m.name}</option>`).join('');
-            
-            document.getElementById('paymentDate').value = new Date().toISOString().split('T')[0];
-            document.getElementById('addPaymentModal').style.display = 'flex';
-        }
-
-        function hideAddPaymentModal() {
-            document.getElementById('addPaymentModal').style.display = 'none';
-        }
-
-        function updatePaymentResident() {
-            const apartmentNo = document.getElementById('paymentApartment').value;
-            const resident = residents.find(r => r.apartment == apartmentNo);
-            document.getElementById('paymentResident').value = resident ? resident.name : '';
-            document.getElementById('paymentAmount').value = resident ? resident.monthlyDues : '';
-        }
-
-        function toggleMonthSelection() {
-            const paymentType = document.getElementById('paymentType').value;
-            const monthDiv = document.getElementById('monthSelectionDiv');
-            monthDiv.style.display = paymentType === 'Aidat' ? 'block' : 'none';
-        }
-
-        // Add functions
-        function addResident(event) {
-            event.preventDefault();
-            if (!isAdmin) return;
-            
+        } else {
+            // Add new resident
             const newResident = {
-                id: residents.length + 1,
+                id: Math.max(...residents.map(r => r.id), 0) + 1,
                 apartment: parseInt(document.getElementById('apartmentNo').value),
                 name: document.getElementById('residentName').value,
                 phone: document.getElementById('residentPhone').value,
@@ -1104,24 +1335,62 @@
             };
             
             residents.push(newResident);
-            loadResidents();
-            hideAddResidentModal();
+            
+            // Add to dues table
+            dues.push({
+                apartment: newResident.apartment,
+                resident: newResident.name,
+                amount: newResident.monthlyDues,
+                status: 'Bekliyor',
+                lastPayment: '-'
+            });
+            
             showCustomAlert('Yeni sakin başarıyla eklendi!');
-            
-            // Reset form
-            document.getElementById('apartmentNo').value = '';
-            document.getElementById('residentName').value = '';
-            document.getElementById('residentPhone').value = '';
-            document.getElementById('residentEmail').value = '';
-            document.getElementById('residentDues').value = '';
         }
+        
+        loadResidents();
+        if (document.querySelector('.tab-content.active').id === 'dues') {
+            loadDues();
+        }
+        updateDashboard();
+        updateReportsTab();
+        hideAddResidentModal();
+        
+        // Reset form
+        event.target.reset();
+    }
 
-        function addExpense(event) {
-            event.preventDefault();
-            if (!isAdmin) return;
+    function addExpense(event) {
+        event.preventDefault();
+        if (!isAdmin) return;
+        
+        const modal = document.getElementById('addExpenseModal');
+        const editId = modal.dataset.editId;
+        
+        if (editId) {
+            // Update existing expense
+            const expenseIndex = expenses.findIndex(e => e.id === parseInt(editId));
+            if (expenseIndex !== -1) {
+                expenses[expenseIndex] = {
+                    ...expenses[expenseIndex],
+                    date: document.getElementById('expenseDate').value,
+                    description: document.getElementById('expenseDescription').value,
+                    category: document.getElementById('expenseCategory').value,
+                    amount: parseFloat(document.getElementById('expenseAmount').value)
+                };
+                
+                showCustomAlert('Gider bilgileri başarıyla güncellendi!');
+            }
             
+            // Reset modal
+            delete modal.dataset.editId;
+            document.querySelector('#addExpenseModal h3').textContent = 'Yeni Gider Ekle';
+            document.querySelector('#addExpenseModal button[type="submit"]').textContent = 'Ekle';
+            
+        } else {
+            // Add new expense
             const newExpense = {
-                id: expenses.length + 1,
+                id: Math.max(...expenses.map(e => e.id), 0) + 1,
                 date: document.getElementById('expenseDate').value,
                 description: document.getElementById('expenseDescription').value,
                 category: document.getElementById('expenseCategory').value,
@@ -1129,113 +1398,549 @@
             };
             
             expenses.push(newExpense);
-            loadExpenses();
-            hideAddExpenseModal();
             showCustomAlert('Yeni gider başarıyla eklendi!');
-            
-            // Reset form
-            document.getElementById('expenseDate').value = '';
-            document.getElementById('expenseDescription').value = '';
-            document.getElementById('expenseCategory').value = '';
-            document.getElementById('expenseAmount').value = '';
         }
+        
+        loadExpenses();
+        updateDashboard();
+        updateReportsTab();
+        hideAddExpenseModal();
+        
+        // Reset form
+        event.target.reset();
+    }
 
-        function addPayment(event) {
-            event.preventDefault();
-            if (!isAdmin) return;
+    function editResident(id) {
+        if (!isAdmin) {
+            showCustomAlert('Bu işlem için yönetici girişi gereklidir.');
+            return;
+        }
+        
+        const resident = residents.find(r => r.id === id);
+        if (!resident) {
+            showCustomAlert('Sakin bulunamadı!');
+            return;
+        }
+        
+        // Fill the form with existing data
+        document.getElementById('apartmentNo').value = resident.apartment;
+        document.getElementById('residentName').value = resident.name;
+        document.getElementById('residentPhone').value = resident.phone;
+        document.getElementById('residentEmail').value = resident.email;
+        document.getElementById('residentDues').value = resident.monthlyDues;
+        
+        // Change modal title and button text
+        document.querySelector('#addResidentModal h3').textContent = 'Sakin Bilgilerini Düzenle';
+        document.querySelector('#addResidentModal button[type="submit"]').textContent = 'Güncelle';
+        
+        // Store the ID for updating
+        document.getElementById('addResidentModal').dataset.editId = id;
+        
+        // Show modal
+        showAddResidentModal();
+    }
+
+    function deleteResident(id) {
+        console.log('🚀 DELETE RESIDENT - NEW VERSION START');
+        console.log('📋 ID received:', id, 'Type:', typeof id);
+        
+        if (!isAdmin) {
+            console.log('❌ Not admin, showing alert...');
+            showCustomAlert('Bu işlem için yönetici girişi gereklidir.');
+            return;
+        }
+        
+        const numericId = typeof id === 'string' ? parseInt(id) : id;
+        console.log('🔢 Numeric ID:', numericId);
+        
+        const resident = residents.find(r => r.id === numericId);
+        console.log('👤 Found resident:', resident);
+        
+        if (!resident) {
+            console.log('❌ Resident not found!');
+            showCustomAlert('Sakin bulunamadı!');
+            return;
+        }
+        
+        console.log('✅ Resident found, proceeding with deletion...');
+        
+        // Direct deletion without confirm for sandbox environment
+        console.log('🗑️ Deleting resident directly...');
+        console.log('📊 Before deletion - Array length:', residents.length);
+        
+        residents = residents.filter(r => r.id !== numericId);
+        dues = dues.filter(d => d.apartment !== resident.apartment);
+        
+        console.log('📊 After deletion - Array length:', residents.length);
+        console.log('✅ Resident deleted:', resident.name);
+        
+        console.log('🔄 Reloading table...');
+        loadResidents();
+        if (document.querySelector('.tab-content.active').id === 'dues') {
+            loadDues();
+        }
+        updateDashboard();
+        updateReportsTab();
+        
+        showCustomAlert(`${resident.name} başarıyla silindi!`);
+        console.log('🎉 SUCCESS: Deletion completed!');
+        console.log('🏁 DELETE RESIDENT - NEW VERSION END');
+    }
+
+    function editExpense(id) {
+        if (!isAdmin) {
+            showCustomAlert('Bu işlem için yönetici girişi gereklidir.');
+            return;
+        }
+        
+        const expense = expenses.find(e => e.id == id);
+        if (!expense) {
+            showCustomAlert('Gider bulunamadı!');
+            return;
+        }
+        
+        // Fill the form with existing data
+        document.getElementById('expenseDate').value = expense.date;
+        document.getElementById('expenseDescription').value = expense.description;
+        document.getElementById('expenseCategory').value = expense.category;
+        document.getElementById('expenseAmount').value = expense.amount;
+        
+        // Change modal title and button text
+        document.querySelector('#addExpenseModal h3').textContent = 'Gider Bilgilerini Düzenle';
+        document.querySelector('#addExpenseModal button[type="submit"]').textContent = 'Güncelle';
+        
+        // Store the ID for updating
+        document.getElementById('addExpenseModal').dataset.editId = id;
+        
+        // Show modal
+        showAddExpenseModal();
+    }
+
+    function deleteExpense(id) {
+        console.log('🚀 DELETE EXPENSE - NEW VERSION START');
+        console.log('📋 ID received:', id, 'Type:', typeof id);
+        
+        if (!isAdmin) {
+            console.log('❌ Not admin, showing alert...');
+            showCustomAlert('Bu işlem için yönetici girişi gereklidir.');
+            return;
+        }
+        
+        const numericId = typeof id === 'string' ? parseInt(id) : id;
+        console.log('🔢 Numeric ID:', numericId);
+        
+        const expense = expenses.find(e => e.id === numericId);
+        console.log('💰 Found expense:', expense);
+        
+        if (!expense) {
+            console.log('❌ Expense not found!');
+            showCustomAlert('Gider bulunamadı!');
+            return;
+        }
+        
+        console.log('✅ Expense found, proceeding with deletion...');
+        
+        // Direct deletion without confirm for sandbox environment
+        console.log('🗑️ Deleting expense directly...');
+        console.log('📊 Before deletion - Array length:', expenses.length);
+        
+        expenses = expenses.filter(e => e.id !== numericId);
+        
+        console.log('📊 After deletion - Array length:', expenses.length);
+        console.log('✅ Expense deleted:', expense.description);
+        
+        console.log('🔄 Reloading table...');
+        loadExpenses();
+        updateDashboard();
+        updateReportsTab();
+        
+        showCustomAlert(`"${expense.description}" gideri başarıyla silindi!`);
+        console.log('🎉 SUCCESS: Deletion completed!');
+        console.log('🏁 DELETE EXPENSE - NEW VERSION END');
+    }
+
+    function addPayment(event) {
+        event.preventDefault();
+        if (!isAdmin) return;
+        
+        const modal = document.getElementById('addPaymentModal');
+        const editId = modal.dataset.editId;
+        
+        if (editId) {
+            // Update existing payment
+            const paymentIndex = payments.findIndex(p => p.id === parseInt(editId));
+            if (paymentIndex !== -1) {
+                payments[paymentIndex] = {
+                    ...payments[paymentIndex],
+                    date: document.getElementById('paymentDate').value,
+                    apartment: parseInt(document.getElementById('paymentApartment').value),
+                    resident: document.getElementById('paymentResident').value,
+                    type: document.getElementById('paymentType').value,
+                    description: document.getElementById('paymentDescription').value,
+                    amount: parseFloat(document.getElementById('paymentAmount').value)
+                };
+                
+                showCustomAlert('Ödeme bilgileri başarıyla güncellendi!');
+            }
             
-            const apartmentNo = parseInt(document.getElementById('paymentApartment').value);
-            const resident = residents.find(r => r.apartment === apartmentNo);
-            const paymentType = document.getElementById('paymentType').value;
-            const amount = parseFloat(document.getElementById('paymentAmount').value);
-            const month = document.getElementById('paymentMonth').value;
+            // Reset modal
+            delete modal.dataset.editId;
+            document.querySelector('#addPaymentModal h3').textContent = 'Yeni Ödeme Ekle';
+            document.querySelector('#addPaymentModal button[type="submit"]').textContent = 'Ekle';
             
+        } else {
+            // Add new payment
             const newPayment = {
-                id: payments.length + 1,
-                apartment: apartmentNo,
-                resident: resident.name,
-                amount: amount,
+                id: Math.max(...payments.map(p => p.id), 0) + 1,
                 date: document.getElementById('paymentDate').value,
+                apartment: parseInt(document.getElementById('paymentApartment').value),
+                resident: document.getElementById('paymentResident').value,
+                type: document.getElementById('paymentType').value,
                 description: document.getElementById('paymentDescription').value,
-                type: paymentType,
-                month: paymentType === 'Aidat' ? month : null
+                amount: parseFloat(document.getElementById('paymentAmount').value)
             };
             
             payments.push(newPayment);
+            showCustomAlert('Yeni ödeme başarıyla eklendi!');
+        }
+        
+        loadDues(); // Reload dues to update payment status
+        updateDashboard();
+        updateReportsTab();
+        hideAddPaymentModal();
+        
+        // Reset form
+        event.target.reset();
+    }
+
+    function editPayment(id) {
+        if (!isAdmin) {
+            showCustomAlert('Bu işlem için yönetici girişi gereklidir.');
+            return;
+        }
+        
+        const payment = payments.find(p => p.id === id);
+        if (!payment) {
+            showCustomAlert('Ödeme bulunamadı!');
+            return;
+        }
+        
+        // Populate apartment dropdown first
+        const apartmentSelect = document.getElementById('paymentApartment');
+        apartmentSelect.innerHTML = '<option value="">Seçiniz</option>' + 
+            residents.map(resident => 
+                `<option value="${resident.apartment}" data-resident="${resident.name}">${resident.apartment} - ${resident.name}</option>`
+            ).join('');
+        
+        // Fill the form with existing data
+        document.getElementById('paymentDate').value = payment.date;
+        document.getElementById('paymentApartment').value = payment.apartment;
+        document.getElementById('paymentResident').value = payment.resident;
+        document.getElementById('paymentType').value = payment.type;
+        document.getElementById('paymentDescription').value = payment.description;
+        document.getElementById('paymentAmount').value = payment.amount;
+        
+        // Change modal title and button text
+        document.querySelector('#addPaymentModal h3').textContent = 'Ödeme Bilgilerini Düzenle';
+        document.querySelector('#addPaymentModal button[type="submit"]').textContent = 'Güncelle';
+        
+        // Store the ID for updating
+        document.getElementById('addPaymentModal').dataset.editId = id;
+        
+        // Show modal
+        showAddPaymentModal();
+    }
+
+    function deletePayment(id) {
+        console.log('🚀 DELETE PAYMENT - START');
+        console.log('📋 ID received:', id, 'Type:', typeof id);
+        
+        if (!isAdmin) {
+            console.log('❌ Not admin, showing alert...');
+            showCustomAlert('Bu işlem için yönetici girişi gereklidir.');
+            return;
+        }
+        
+        const numericId = typeof id === 'string' ? parseInt(id) : id;
+        console.log('🔢 Numeric ID:', numericId);
+        
+        const payment = payments.find(p => p.id === numericId);
+        console.log('💳 Found payment:', payment);
+        
+        if (!payment) {
+            console.log('❌ Payment not found!');
+            showCustomAlert('Ödeme bulunamadı!');
+            return;
+        }
+        
+        console.log('✅ Payment found, proceeding with deletion...');
+        
+        // Direct deletion without confirm for sandbox environment
+        console.log('🗑️ Deleting payment directly...');
+        console.log('📊 Before deletion - Array length:', payments.length);
+        
+        payments = payments.filter(p => p.id !== numericId);
+        
+        console.log('📊 After deletion - Array length:', payments.length);
+        console.log('✅ Payment deleted:', payment.description);
+        
+        console.log('🔄 Reloading table...');
+        loadDues(); // Reload dues to update payment status
+        updateDashboard();
+        updateReportsTab();
+        
+        showCustomAlert(`"${payment.description}" ödemesi başarıyla silindi!`);
+        console.log('🎉 SUCCESS: Deletion completed!');
+        console.log('🏁 DELETE PAYMENT - END');
+    }
+
+    function markAsPaid() {
+        if (!isAdmin) {
+            showCustomAlert('Bu işlem için yönetici girişi gereklidir.');
+            return;
+        }
+        
+        const checkboxes = document.querySelectorAll('.due-checkbox:checked');
+        if (checkboxes.length === 0) {
+            showCustomAlert('Lütfen en az bir aidat seçin.');
+            return;
+        }
+        
+        checkboxes.forEach(checkbox => {
+            const index = parseInt(checkbox.dataset.index);
+            dues[index].status = 'Ödendi';
+            dues[index].lastPayment = new Date().toLocaleDateString('tr-TR');
+        });
+        
+        loadDues();
+        updateDashboard();
+        updateReportsTab();
+        showCustomAlert(`${checkboxes.length} aidat ödendi olarak işaretlendi.`);
+    }
+
+    function markAsUnpaid() {
+        if (!isAdmin) {
+            showCustomAlert('Bu işlem için yönetici girişi gereklidir.');
+            return;
+        }
+        
+        const checkboxes = document.querySelectorAll('.due-checkbox:checked');
+        if (checkboxes.length === 0) {
+            showCustomAlert('Lütfen en az bir aidat seçin.');
+            return;
+        }
+        
+        checkboxes.forEach(checkbox => {
+            const index = parseInt(checkbox.dataset.index);
+            dues[index].status = 'Bekliyor';
+            dues[index].lastPayment = '-';
+        });
+        
+        loadDues();
+        updateDashboard();
+        updateReportsTab();
+        showCustomAlert(`${checkboxes.length} aidat ödenmedi olarak işaretlendi.`);
+    }
+
+    function toggleSelectAll() {
+        if (!isAdmin) return;
+        
+        const selectAll = document.getElementById('selectAll');
+        const checkboxes = document.querySelectorAll('.due-checkbox');
+        
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = selectAll.checked;
+        });
+    }
+
+    function downloadReport(type) {
+        alert(`${type} raporu indiriliyor... (Demo sürümünde aktif değil)`);
+    }
+
+    // Dashboard update functions
+    function updateDashboard() {
+        // Update total apartments
+        document.getElementById('totalApartments').textContent = residents.length;
+        
+        // Calculate monthly collected from payments (more accurate)
+        const currentDate = new Date();
+        const currentMonth = currentDate.getMonth();
+        const currentYear = currentDate.getFullYear();
+        
+        const monthlyPayments = payments.filter(payment => {
+            const paymentDate = new Date(payment.date);
+            return paymentDate.getMonth() === currentMonth && paymentDate.getFullYear() === currentYear;
+        });
+        const monthlyCollected = monthlyPayments.reduce((sum, payment) => sum + payment.amount, 0);
+        document.getElementById('monthlyCollected').textContent = `₺${monthlyCollected.toLocaleString('tr-TR')}`;
+        
+        // Calculate pending dues
+        const pendingDues = dues.filter(due => due.status !== 'Ödendi');
+        const pendingAmount = pendingDues.reduce((sum, due) => sum + due.amount, 0);
+        document.getElementById('pendingDues').textContent = `₺${pendingAmount.toLocaleString('tr-TR')}`;
+        
+        // Calculate monthly expenses
+        const currentMonthExpenses = expenses.filter(expense => {
+            const expenseDate = new Date(expense.date);
+            return expenseDate.getMonth() === currentMonth && 
+                   expenseDate.getFullYear() === currentYear;
+        });
+        const monthlyExpensesTotal = currentMonthExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+        document.getElementById('monthlyExpenses').textContent = `₺${monthlyExpensesTotal.toLocaleString('tr-TR')}`;
+    }
+
+    function populateMonthSelector() {
+        const selector = document.getElementById('monthSelector');
+        if (!selector) return;
+        
+        const months = [
+            'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
+            'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'
+        ];
+        
+        const currentDate = new Date();
+        const currentYear = currentDate.getFullYear();
+        const currentMonthIndex = currentDate.getMonth();
+        
+        selector.innerHTML = '';
+        
+        // Add current and previous months
+        for (let i = 0; i < 6; i++) {
+            const monthIndex = (currentMonthIndex - i + 12) % 12;
+            const year = currentMonthIndex - i < 0 ? currentYear - 1 : currentYear;
+            const monthName = months[monthIndex];
             
-            // Update monthly dues data if it's a dues payment
-            if (paymentType === 'Aidat' && month) {
-                if (!monthlyDuesData[apartmentNo]) {
-                    monthlyDuesData[apartmentNo] = {};
-                }
-                if (!monthlyDuesData[apartmentNo][month]) {
-                    monthlyDuesData[apartmentNo][month] = {
-                        status: 'Bekliyor',
-                        paidAmount: 0,
-                        dueAmount: resident.monthlyDues,
-                        payments: []
-                    };
-                }
-                
-                monthlyDuesData[apartmentNo][month].paidAmount += amount;
-                monthlyDuesData[apartmentNo][month].payments.push(newPayment);
-                
-                // Update status
-                if (monthlyDuesData[apartmentNo][month].paidAmount >= monthlyDuesData[apartmentNo][month].dueAmount) {
-                    monthlyDuesData[apartmentNo][month].status = 'Ödendi';
-                } else if (monthlyDuesData[apartmentNo][month].paidAmount > 0) {
-                    monthlyDuesData[apartmentNo][month].status = 'Kısmi';
-                }
+            const option = document.createElement('option');
+            option.value = `${year}-${String(monthIndex + 1).padStart(2, '0')}`;
+            option.textContent = `${monthName} ${year}`;
+            
+            if (i === 0) option.selected = true;
+            
+            selector.appendChild(option);
+        }
+    }
+
+    function filterDuesByMonth() {
+        const selectedMonth = document.getElementById('monthSelector').value;
+        // For now, just reload the dues table
+        // In a real app, this would filter by the selected month
+        loadDues();
+        showCustomAlert(`${document.getElementById('monthSelector').selectedOptions[0].text} ayı seçildi`);
+    }
+
+    function togglePaymentDetails(index) {
+        const detailsRow = document.getElementById(`payment-details-${index}`);
+        const arrow = document.getElementById(`arrow-${index}`);
+        
+        if (detailsRow.classList.contains('hidden')) {
+            detailsRow.classList.remove('hidden');
+            arrow.style.transform = 'rotate(180deg)';
+        } else {
+            detailsRow.classList.add('hidden');
+            arrow.style.transform = 'rotate(0deg)';
+        }
+    }
+
+    function updateReportsTab() {
+        // Calculate totals for reports using payments data
+        const totalIncome = payments.reduce((sum, payment) => sum + payment.amount, 0);
+        const totalExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+        const netBalance = totalIncome - totalExpenses;
+        
+        const totalDues = dues.reduce((sum, due) => sum + due.amount, 0);
+        const paidDues = dues.filter(due => due.status === 'Ödendi').reduce((sum, due) => sum + due.amount, 0);
+        const pendingDues = totalDues - paidDues;
+        const collectionRate = totalDues > 0 ? Math.round((paidDues / totalDues) * 100) : 0;
+        
+        // Update report elements
+        document.getElementById('reportTotalIncome').textContent = `₺${totalIncome.toLocaleString('tr-TR')}`;
+        document.getElementById('reportTotalExpenses').textContent = `₺${totalExpenses.toLocaleString('tr-TR')}`;
+        document.getElementById('reportNetBalance').textContent = `₺${netBalance.toLocaleString('tr-TR')}`;
+        
+        document.getElementById('reportTotalDues').textContent = `₺${totalDues.toLocaleString('tr-TR')}`;
+        document.getElementById('reportPaidDues').textContent = `₺${paidDues.toLocaleString('tr-TR')}`;
+        document.getElementById('reportPendingDues').textContent = `₺${pendingDues.toLocaleString('tr-TR')}`;
+        document.getElementById('reportCollectionRate').textContent = `${collectionRate}%`;
+        document.getElementById('reportCollectionBar').style.width = `${collectionRate}%`;
+        
+        // Update expense categories
+        updateExpenseCategories();
+        
+        // Update recent activities
+        updateRecentActivities();
+        
+        // Update report info
+        document.getElementById('duesReportInfo').textContent = `${residents.length} daire • Güncel`;
+        document.getElementById('expensesReportInfo').textContent = `${expenses.length} gider • Bu ay`;
+        document.getElementById('residentsReportInfo').textContent = `${residents.length} sakin • Aktif`;
+    }
+
+    function updateExpenseCategories() {
+        const categoriesDiv = document.getElementById('expenseCategoriesReport');
+        if (!categoriesDiv) return;
+        
+        // Group expenses by category
+        const categories = {};
+        expenses.forEach(expense => {
+            if (!categories[expense.category]) {
+                categories[expense.category] = 0;
             }
-            
-            loadDues();
-            hideAddPaymentModal();
-            showCustomAlert('Ödeme başarıyla eklendi!');
-            
-            // Reset form
-            document.getElementById('paymentDate').value = '';
-            document.getElementById('paymentApartment').value = '';
-            document.getElementById('paymentResident').value = '';
-            document.getElementById('paymentType').value = '';
-            document.getElementById('paymentDescription').value = '';
-            document.getElementById('paymentAmount').value = '';
-            document.getElementById('monthSelectionDiv').style.display = 'none';
-        }
+            categories[expense.category] += expense.amount;
+        });
+        
+        const totalExpenses = Object.values(categories).reduce((sum, amount) => sum + amount, 0);
+        
+        categoriesDiv.innerHTML = Object.entries(categories).map(([category, amount]) => {
+            const percentage = totalExpenses > 0 ? Math.round((amount / totalExpenses) * 100) : 0;
+            return `
+                <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                    <div class="flex items-center">
+                        <div class="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
+                        <span class="text-sm text-gray-700">${category}</span>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-sm font-medium">₺${amount.toLocaleString('tr-TR')}</div>
+                        <div class="text-xs text-gray-500">${percentage}%</div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
 
-        // Monthly dues management functions
-        function toggleSelectAllMonths() {
-            if (!isAdmin) return;
-            const selectAll = document.getElementById('selectAllMonths');
-            const checkboxes = document.querySelectorAll('.month-checkbox');
-            checkboxes.forEach(cb => cb.checked = selectAll.checked);
+    function updateRecentActivities() {
+        const activitiesDiv = document.getElementById('recentActivitiesReport');
+        if (!activitiesDiv) return;
+        
+        // Get recent expenses (last 5)
+        const recentExpenses = expenses.slice(-5).reverse();
+        
+        activitiesDiv.innerHTML = recentExpenses.map(expense => `
+            <div class="flex items-center justify-between p-2 border-l-4 border-red-400 bg-red-50">
+                <div>
+                    <div class="text-sm font-medium text-gray-900">${expense.description}</div>
+                    <div class="text-xs text-gray-500">${new Date(expense.date).toLocaleDateString('tr-TR')} • ${expense.category}</div>
+                </div>
+                <div class="text-sm font-medium text-red-600">-₺${expense.amount.toLocaleString('tr-TR')}</div>
+            </div>
+        `).join('');
+        
+        if (recentExpenses.length === 0) {
+            activitiesDiv.innerHTML = '<p class="text-gray-500 text-sm text-center py-4">Henüz aktivite bulunmuyor</p>';
         }
+    }
 
-        function markSelectedMonthsPaid() {
-            if (!isAdmin) return;
-            const selectedCheckboxes = document.querySelectorAll('.month-checkbox:checked');
-            
-            selectedCheckboxes.forEach(checkbox => {
-                const apartment = parseInt(checkbox.dataset.apartment);
-                const month = checkbox.dataset.month;
-                
-                if (monthlyDuesData[apartment] && monthlyDuesData[apartment][month]) {
-                    monthlyDuesData[apartment][month].status = 'Ödendi';
-                    monthlyDuesData[apartment][month].paidAmount = monthlyDuesData[apartment][month].dueAmount;
-                }
-            });
-            
-            loadMonthlyDuesTable();
-            showCustomAlert(`${selectedCheckboxes.length} ödeme işaretlendi!`);
-        }
+    function loadCharts() {
+        updateReportsTab();
+    }
 
-        function markSelectedMonthsUnpaid() {
-            if (!isAdmin) return;
-            const selectedCheckboxes = document.querySelectorAll('.month-checkbox:checked');
-            
-            selectedCheckboxes.forEach(checkbox => {
-                const apartment = parseInt(checkbox.dataset.apartment);
-                const month = checkbox.dataset.month;
-                
-                if (monthlyDuesData[apartment] && monthlyDuesData[apartment][month]) {
-                    monthlyDuesData[apartment][month].status = 'Bekliyor';
-                    monthlyDues```
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', function() {
+        updateUserInterface();
+        updateDashboard();
+        populateMonthSelector();
+        loadResidents();
+        loadDues();
+        loadExpenses();
+        updateReportsTab();
+    });
+</script>
