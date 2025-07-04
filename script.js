@@ -1,5 +1,4 @@
-
-    // Global state
+// Global state
     let isAdmin = false;
     let currentUser = 'Sakin';
     let currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM format
@@ -1187,3 +1186,4 @@
         loadExpenses();
         updateReportsTab();
     });
+
